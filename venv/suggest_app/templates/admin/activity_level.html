@@ -1,0 +1,50 @@
+{% extends "admin_base.html" %}
+
+
+{% block content %}
+	    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.name.label }}<br>
+            {{ form.name(size=32) }}<br>
+            {% for error in form.name.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.abr.label }}<br>
+            {{ form.abr(size=32) }}<br>
+            {% for error in form.abr.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.activity.label }}<br>
+            {{ form.activity(size=32) }}<br>
+            {% for error in form.activity.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+
+	<table class="tg">
+	  <tr>
+	    <th class="tg-fymr">Название</th>
+	    <th class="tg-fymr">Аббравиатура</th>
+	    <th class="tg-fymr">Процент от нормы</th>
+	    <th class="tg-fymr">Удалить</th>
+	  </tr>
+	  {% for al in activity_levels %}
+		  <tr>
+		    <td class="tg-c3ow">{{ al.name }}</td>
+		    <td class="tg-c3ow">{{ al.abr }}</td>
+		    <td class="tg-c3ow">{{ al.activity }}</td>
+		    <td class="tg-c3ow"><a href="{{ '/admin/delete_activity_level/' + al.abr }}">X</a></td>
+		  </tr>
+
+	  {% endfor %}
+	</table>
+
+
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "admin_base.html" %}
+
+
+{% block content %}
+	<form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.name.label }}<br>
+            {{ form.name(size=32) }}<br>
+            {% for error in form.name.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.abr.label }}<br>
+            {{ form.abr(size=32) }}<br>
+            {% for error in form.abr.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.percent.label }}<br>
+            {{ form.percent(size=32) }}<br>
+            {% for error in form.percent.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.protein.label }}<br>
+            {{ form.protein(size=32) }}<br>
+            {% for error in form.protein.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.fat.label }}<br>
+            {{ form.fat(size=32) }}<br>
+            {% for error in form.fat.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.corb.label }}<br>
+            {{ form.corb(size=32) }}<br>
+            {% for error in form.corb.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+
+	<table class="tg">
+	  <tr>
+	    <th class="tg-fymr">Название</th>
+	    <th class="tg-fymr">Аббравиатура</th>
+	    <th class="tg-fymr">Процент от нормы</th>
+	    <th class="tg-fymr">Процент белков</th>
+	    <th class="tg-fymr">Процент жиров</th>
+	    <th class="tg-fymr">Процент углеводов</th>
+	    <th class="tg-fymr">Удалить</th>
+	  </tr>
+	  {% for g in goals %}
+		  <tr>
+		    <td class="tg-c3ow">{{ g.name }}</td>
+		    <td class="tg-c3ow">{{ g.abr }}</td>
+		    <td class="tg-c3ow">{{ g.percent }}</td>
+		    <td class="tg-c3ow">{{ g.pfc[0] }}</td>
+		    <td class="tg-c3ow">{{ g.pfc[1] }}</td>
+		    <td class="tg-c3ow">{{ g.pfc[2] }}</td>
+
+		    <td class="tg-c3ow"><a href="{{ '/admin/delete_goal/' + g.abr }}">X</a></td>
+		  </tr>
+
+	  {% endfor %}
+	</table>
+
+
+{% endblock %}

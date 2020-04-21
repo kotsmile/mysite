@@ -1,0 +1,51 @@
+{% extends "admin_base.html" %}
+
+
+{% block content %}
+	
+	    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.name.label }}<br>
+            {{ form.name(size=32) }}<br>
+            {% for error in form.name.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.abr.label }}<br>
+            {{ form.abr(size=32) }}<br>
+            {% for error in form.abr.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.days.label }}<br>
+            {{ form.days(size=32) }}<br>
+            {% for error in form.days.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+
+	<table class="tg">
+	  <tr>
+	    <th class="tg-fymr">Название</th>
+	    <th class="tg-fymr">Аббравиатура</th>
+	    <th class="tg-fymr">Количество дней</th>
+	    <th class="tg-fymr">Удалить</th>
+	  </tr>
+	  {% for p in periods %}
+		  <tr>
+		    <td class="tg-c3ow">{{ p.name }}</td>
+		    <td class="tg-c3ow">{{ p.abr }}</td>
+		    <td class="tg-c3ow">{{ p.days }}</td>
+		    <td class="tg-c3ow"><a href="{{ '/admin/delete_period/' + p.abr }}">X</a></td>
+		  </tr>
+
+	  {% endfor %}
+	</table>
+
+
+{% endblock %}

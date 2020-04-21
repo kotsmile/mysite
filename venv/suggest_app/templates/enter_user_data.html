@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+    <h1>Составить меню</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.age.label }}<br>
+            {{ form.age(size=32) }}<br>
+            {% for error in form.age.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.weight.label }}<br>
+            {{ form.weight(size=32) }}<br>
+            {% for error in form.weight.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.height.label }}<br>
+            {{ form.height(size=32) }}<br>
+            {% for error in form.height.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.fat_percent.label }}<br>
+            {{ form.fat_percent(size=32) }}<br>
+            {% for error in form.fat_percent.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.activity_level.label }}<br>
+            {{ form.activity_level }}<br>
+            {% for error in form.activity_level.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>
+            {{ form.goal.label }}<br>
+            {{ form.goal }}<br>
+            {% for error in form.goal.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        
+        <p>
+            {{ form.period.label }}<br>
+            {{ form.period }}<br>
+            {% for error in form.period.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}
