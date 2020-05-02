@@ -5,7 +5,7 @@ import time
 import pandas as pd
 import copy
 
-
+# bad
 def build_day_menu():
     save_pck(1, UPDATE_PATH)
 
@@ -77,44 +77,103 @@ def build_day_menu():
     print(f'time: {int(time.time() - t1)} sec')
     save_pck(2, UPDATE_PATH)
 
+new_eq_conf = {
+    'const': -161,
+    'c_weight': 9.99,
+    'c_height': 6.25,
+    'c_age': -4.92,
+}
+save_pck(new_eq_conf, EQ_CONF_PATH)
+
 def get_menu(user):
+
     code_recipes = load_pck(CODE_RECIPES_PATH)
     eq_conf = load_pck(EQ_CONF_PATH)
 
     activity_levels = {al.abr: al for al in load_pck(ACTIVITY_LEVELS_PATH)}
     goals = {g.abr: g for g in load_pck(GOALS_PATH)}
     periods = {p.abr: p for p in load_pck(PERIODS_PATH)}
-
     user.fat_percent = (1 - user.fat_percent / 100)
-    amount_of_calories = eq_conf['const']
+
+    min_metab = eq_conf['const']
     for k, v in eq_conf.items():
         if k == 'const':
             continue
-        amount_of_calories += v * getattr(user, k[2:])
+        min_metab += v * getattr(user, k[2:])
 
-    amount_of_calories *= goals[user.goal].percent * activity_levels[user.activity_level].activity
+    total_of_cal = min_metab * goals[user.goal].percent if min_metab * goals[user.goal].percent >= 1200 else 1200
 
-    need_protein = amount_of_calories * goals[user.goal].pfc[0] / 4
-    need_fat = amount_of_calories * goals[user.goal].pfc[1] / 9
-    need_corb = amount_of_calories * goals[user.goal].pfc[2] / 4
+    error_percent_cal = 0.2
 
-    less = 1.2
-    more = 0.8
+    error_percent_protein = 0.2
+    error_percent_fat = 0.2
+    error_percent_corb = 0.3
 
-    day_menu = pd.read_pickle(DAY_MENU_PATH)
+    cal_with_activity = total_of_cal * activity_levels[user.activity_level].activity
 
-    options = day_menu[
-        (amount_of_calories * less >= day_menu['Калории']) & 
-        (amount_of_calories * more <= day_menu['Калории']) &        
-        (need_protein * less >= day_menu['Белки']) & 
-        (need_protein * more <= day_menu['Белки']) &
-        (need_fat * less >= day_menu['Жиры']) & 
-        (need_fat * more <= day_menu['Жиры']) &
-        (need_corb * less >= day_menu['Углеводы']) & 
-        (need_corb * more <= day_menu['Углеводы'])
-    ]
+    need_protein = cal_with_activity * goals[user.goal].pfc[0] / 4 if cal_with_activity * goals[user.goal].pfc[0] / 4 >= 60 else 60
+    need_fat = cal_with_activity * goals[user.goal].pfc[1] / 9 if cal_with_activity * goals[user.goal].pfc[1] / 9 >= 35 else 60
+    need_corb = cal_with_activity * goals[user.goal].pfc[2] / 4
+
+    print(total_of_cal)
+    print(need_protein)
+    print(need_fat)
+    print(need_corb)
+
+    all_options = []
+    for file_name in get_file_names(DAY_MENU_PATH): 
+        day_menu = pd.read_pickle(DAY_MENU_PATH + file_name)
+
+        options = day_menu[
+            (total_of_cal * (1 + error_percent_cal) >= day_menu['Калории']) & 
+            (total_of_cal * (1 - error_percent_cal) <= day_menu['Калории']) &
+            (need_protein * (1 + error_percent_protein) >= day_menu['Белки']) & 
+            (need_protein * (1 - error_percent_protein) <= day_menu['Белки']) &
+            (need_fat * (1 + error_percent_fat) >= day_menu['Жиры']) & 
+            (need_fat * (1 - error_percent_fat) <= day_menu['Жиры']) &
+            (need_corb * (1 + error_percent_corb) >= day_menu['Углеводы']) & 
+            (need_corb * (1 - error_percent_corb) <= day_menu['Углеводы'])
+        ]
+        all_options.append(options)
+        print(file_name)
+
+    raw_options = pd.concat(all_options)
+    
+
+    columns=['Завтрак', 'Обед', 'Перекус', 'Ужин', 'Калории', 'Белки', 'Жиры', 'Углеводы']
+    options = pd.DataFrame([], columns=columns)
+    options = options.astype({
+            'Завтрак': 'int32',
+            'Обед': 'int32',
+            'Перекус': 'int32',
+            'Ужин': 'int32',
+            'Калории': 'float16',
+            'Белки': 'float16',
+            'Жиры': 'float16',
+            'Углеводы': 'float16',
+    })
+
+    for index, row in raw_options.iterrows():
+        if (code_recipes[row['Завтрак']].name == code_recipes[row['Обед']].name or 
+            code_recipes[row['Завтрак']].name == code_recipes[row['Перекус']].name or 
+            code_recipes[row['Завтрак']].name == code_recipes[row['Ужин']].name):
+            continue 
+
+        row = [
+            row['Завтрак'],
+            row['Обед'],
+            row['Перекус'],
+            row['Ужин'],
+            row['Калории'],
+            row['Белки'],
+            row['Жиры'],
+            row['Углеводы'],
+        ]
+        options = options.append(pd.DataFrame([row], columns=columns))
+
     print('s', options.shape[0])
-
+    if options.shape[0] == 0:
+        return -1
     days = []
     i = 0
     rac = ['Завтрак', 'Обед', 'Перекус', 'Ужин']
@@ -138,7 +197,7 @@ def get_menu(user):
         days = days + lil_days
 
 
-    return days[:periods[user.period].days]
+    return days[:periods[user.period].days], total_of_cal, need_protein, need_fat, need_corb
 
 def add_score(id_, score):
     pass

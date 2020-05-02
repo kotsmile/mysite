@@ -1,5 +1,5 @@
 from suggest_tool.paths import *
-from suggest_tool.parser import get_all_from
+from suggest_tool.parser import parse_page
 import pickle
 
 class ActivityLevel:
@@ -94,7 +94,8 @@ d1_recipe_types = {
 }
 
 class Recipe:
-    def __init__(self, link, recipe_type):
+    def __init__(self, link, code, recipe_type):
         self.recipe_type = recipe_type
         self.link = link
-        self.code, self.name, self.time, self.calories, self.protein, self.fat, self.corb = get_all_from(link)
+        self.code = code
+        self.name, self.time, self.calories, self.protein, self.fat, self.corb = parse_page(link)

@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-	
+	<h3>За день норма</h3>
+	Калории: {{ calories }} ккал<br>
+    Белки: {{ protein }} г<br>
+    Жиры: {{ fat }} г<br>
+    Углеводы: {{ corb }} г<br>
 
+    <h3>Меню</h3>
 	<style type="text/css">
 	.tg  {border-collapse:collapse;border-spacing:0;}
 	.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
@@ -21,7 +26,7 @@
 		  <tr>
 		    <td class="tg-nrix">{{ d.num }}</td>
 		    {% for r in d.recipes %}
-		  		<th class="tg-nrix"><a href="{{ r.link }}">{{ r.name }}</a></th>
+		  		<th class="tg-nrix"><a href="{{ '/recipe/' + r.code|string }}">{{ r.name }}</a></th>
 	  		{% endfor %}
 
 		  </tr>

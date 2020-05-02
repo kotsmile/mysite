@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+    <h1>{{ recipe.name }}</h1>
+    <h3>{{ recipe.recipe_type.name }}</h3>
+    Время: {{ recipe.time }}<br>
+    Калории: {{ recipe.calories }} ккал<br>
+    Белки: {{ recipe.protein }} г<br>
+    Жиры: {{ recipe.fat }} г<br>
+    Углеводы: {{ recipe.corb }} г<br>
+
+    <a href="{{ recipe.link }}">Ссылка на рецепт</a>
+    
+{% endblock %}

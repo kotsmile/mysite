@@ -2,7 +2,7 @@ import pickle
 
 USERS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/users.pck'
 
-DAY_MENU_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/day_menu.pck'
+DAY_MENU_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/menus/'
 
 ACTIVITY_LEVELS_PATH =  '/home/kotsmile/mysite/venv/suggest_tool/tables/activity_level.pck'
 GOALS_PATH =  '/home/kotsmile/mysite/venv/suggest_tool/tables/goals.pck'
@@ -13,6 +13,13 @@ CODE_RECIPES_PATH =  '/home/kotsmile/mysite/venv/suggest_tool/tables/code_recipe
 
 UPDATE_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/update.pck'
 
+
+
+def get_file_names(path):
+	from os import listdir
+	from os.path import isfile, join
+	onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
+	return onlyfiles
 
 
 def get_update():

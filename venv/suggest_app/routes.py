@@ -367,6 +367,14 @@ def logout():
 #     return render_template('register.html', title='Register', form=form)
 
 
+@app.route('/recipe/<code>')
+def recipe(code):
+    code = int(code)
+    code_recipes = load_pck(CODE_RECIPES_PATH)
+    recipe = code_recipes[code]
+    
+
+    return render_template('recipe.html', title='Рецепт', recipe=recipe)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -449,13 +457,18 @@ def menu(quary):
 
     users.append(user)
     save_pck(users, USERS_PATH)
+    ans = get_menu(user)
+    if ans == -1:
+        return 'Не можем подобрать для вас меню :('
+    days, calories, protein, fat, corb = ans
     
-    days = get_menu(user)
-    if days == -1:
-        return -1
     return render_template(
         'menu.html', 
         title='Меню', 
-        days=days
+        days=days,
+        calories=int(calories),
+        protein=int(protein),
+        fat=int(fat),
+        corb=int(corb)
     )
             
