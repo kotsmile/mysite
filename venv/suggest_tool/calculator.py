@@ -48,9 +48,6 @@ def get_menu(user):
     # protein
     if user.gender == 'm':
         min_protein = user.weight * 1.5
-        print(cal_with_activity)
-        print(goals[user.goal].pfc[0] - 0.07)
-        print(cal_with_activity * (goals[user.goal].pfc[0] - error_percent_protein) / 4)
     else:
         min_protein = 60
 
