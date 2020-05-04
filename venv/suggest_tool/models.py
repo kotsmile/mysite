@@ -35,7 +35,8 @@ class User:
         height=0,
         activity_level=0,
         goal=0,
-        period=0
+        period=0,
+        gender=0,
     ):
         self.id_ = id_
 
@@ -47,6 +48,7 @@ class User:
         self.goal = goal
 
         self.period = period
+        self.gender = gender
 
     def get_activity_level(self):
         return activity_level_sym[self.activity_level]

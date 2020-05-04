@@ -401,6 +401,25 @@ def create_suggest():
         goals_choices = [(g.abr, g.name) for g in goals]
         periods_choices = [(p.abr, p.name) for p in periods]
 
+        gender = SelectField(
+            'Пол',
+            choices=[
+                ('m', 'Мужской'),
+                ('f', 'Женский'),
+            ], 
+            validators=[DataRequired()]
+        )
+
+        body_type = SelectField(
+            'Тип телосложения',
+            choices=[
+                ('1', 'Крупное'),
+                ('2', 'Нормальное'),
+                ('3', 'Худощавое'),
+            ], 
+            validators=[DataRequired()]
+        )
+
         activity_level = SelectField(
             'Уровень повседневной активности',
             choices=activity_levels_choices, 
@@ -425,6 +444,7 @@ def create_suggest():
             str(form.age.data),
             str(form.weight.data),
             str(form.height.data),
+            str(form.gender.data),
             str(form.activity_level.data),
             str(form.goal.data),
             str(form.period.data),
@@ -437,7 +457,7 @@ def create_suggest():
 
 @app.route('/menu/<quary>')
 def menu(quary):
-    age, weight, height, activity_level_abr, goal_abr, period_abr = quary.split('&')
+    age, weight, height, gender, activity_level_abr, goal_abr, period_abr = quary.split('&')
 
     age = int(age)
     weight = float(weight)
@@ -452,6 +472,7 @@ def menu(quary):
         age=age,
         weight=weight,
         height=height,
+        gender=gender,
         activity_level=activity_level_abr,
         goal=goal_abr,
         period=period_abr

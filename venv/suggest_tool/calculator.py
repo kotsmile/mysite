@@ -1,5 +1,5 @@
 from suggest_tool.paths import *
-from suggest_tool.models import Recipe, Day, d1_recipe_types
+from suggest_tool.models import *
 import pickle 
 import time
 import pandas as pd
@@ -21,7 +21,11 @@ def get_menu(user):
     goals = {g.abr: g for g in load_pck(GOALS_PATH)}
     periods = {p.abr: p for p in load_pck(PERIODS_PATH)}
 
+
     min_metab = eq_conf['const']
+    if user.gender == 'm':
+        min_metab += 166 # from excel table for female
+
     for k, v in eq_conf.items():
         if k == 'const':
             continue
@@ -42,20 +46,34 @@ def get_menu(user):
     cal_with_activity = total_of_cal * activity_levels[user.activity_level].activity
 
     # protein
-    if cal_with_activity * (goals[user.goal].pfc[0] - error_percent_protein) / 4 >= 60:
+    if user.gender == 'm':
+        min_protein = user.weight * 1.5
+        print(cal_with_activity)
+        print(goals[user.goal].pfc[0] - 0.07)
+        print(cal_with_activity * (goals[user.goal].pfc[0] - error_percent_protein) / 4)
+    else:
+        min_protein = 60
+
+    if cal_with_activity * (goals[user.goal].pfc[0] - error_percent_protein) / 4 >= min_protein:
         min_need_protein = cal_with_activity * (goals[user.goal].pfc[0] - error_percent_protein) / 4
     else:
-        min_need_protein = 60
+        min_need_protein = min_protein
+
     if cal_with_activity * (goals[user.goal].pfc[0] + error_percent_fat) / 4 < 2 * user.weight:
         max_need_protein = cal_with_activity * (goals[user.goal].pfc[0] + error_percent_fat) / 4
     else:
         max_need_protein = 2 * user.weight
 
     # fat
-    if cal_with_activity * (goals[user.goal].pfc[1] - error_percent_fat) / 9 >= 35:
+    if user.gender == 'm':
+        min_fat = 40
+    else:
+        min_fat = 35
+
+    if cal_with_activity * (goals[user.goal].pfc[1] - error_percent_fat) / 9 >= min_fat:
         min_need_fat = cal_with_activity * (goals[user.goal].pfc[1] - error_percent_fat) / 9
     else:
-        min_need_fat = 35
+        min_need_fat = min_fat
     max_need_fat = cal_with_activity * (goals[user.goal].pfc[1] + error_percent_fat) / 9
 
     # corb
@@ -101,12 +119,12 @@ def get_menu(user):
             if cal_cond and protein_cond and fat_cond and corb_cond:
                 searched_recipes[rt].append(r)
 
-    print(f"found: {len(searched_recipes['Завтрак'])}, {len(searched_recipes['Обед'])}, {len(searched_recipes['Ужин'])}; snackes: {len(snackes)}")
     good_pairs = {rt: [] for rt in rts}
 
     for rt in rts:
         for recipe in searched_recipes[rt]:
             random.shuffle(snackes)
+            i = 0
             for snack in snackes:
                 cal_cond = (
                     for_types_cpfc[rt][0][0] <= recipe.calories + snack.calories <= for_types_cpfc[rt][0][1]
@@ -122,14 +140,17 @@ def get_menu(user):
                 )
                 if cal_cond and protein_cond and fat_cond and corb_cond:
                     good_pairs[rt].append((recipe, snack))
-                    break
-    print(f"{len(good_pairs['Завтрак'])}, {len(good_pairs['Обед'])}, {len(good_pairs['Ужин'])}")
-    back_up_good_pair = good_pairs.copy()
+                    i += 1
+                    if i == 10:
+                        break
+
+    raw_good_pairs = {}
+    for rt in rts:
+        raw_good_pairs[rt] = good_pairs[rt].copy()
+        random.shuffle(raw_good_pairs[rt])
+
     amount_of_days = periods[user.period].days
     days = []
-
-    for rt in rts:
-        random.shuffle(good_pairs[rt])
 
     used_snackes = []
     for i in range(1, amount_of_days + 1):
@@ -137,17 +158,21 @@ def get_menu(user):
         for rt in rts:
             find = False
             while not find:
-                if len(good_pairs[rt]) == 0:
-                    good_pairs[rt] = back_up_good_pair[rt].copy()
-                    random.shuffle(good_pairs[rt])
+
+                if len(raw_good_pairs[rt]) == 0:
+                    for rt in rts:
+                        raw_good_pairs[rt] = good_pairs[rt].copy()
+                    random.shuffle(raw_good_pairs[rt])
                     used_snackes = []
-                if good_pairs[rt][0][1] not in used_snackes:
-                    recipes_for_day.append(good_pairs[rt][0][0])
-                    recipes_for_day.append(good_pairs[rt][0][1])
-                    used_snackes.append(good_pairs[rt][0][1])
+
+                if raw_good_pairs[rt][0][1] not in used_snackes:
+
+                    recipes_for_day.append(raw_good_pairs[rt][0][0])
+                    recipes_for_day.append(raw_good_pairs[rt][0][1])
+                    used_snackes.append(raw_good_pairs[rt][0][1])
                     find = True
 
-                good_pairs[rt].pop(0)
+                raw_good_pairs[rt].pop(0)
 
         day = Day(num=i, recipes=recipes_for_day)
         days.append(day)
