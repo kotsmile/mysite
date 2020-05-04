@@ -5,8 +5,9 @@ import time
 import re
 from bs4 import BeautifulSoup
 import pandas as pd
-from suggest_tool.models import Recipe, BREAKFAST, LUNCH, SNACK, DINNER
-from suggest_tool.paths import CODE_RECIPES_PATH, RECIPES_PATH
+from suggest_tool.models import *
+from suggest_tool.paths import *
+from suggest_tool.parser import noty
 
 links = '''b https://eda.ru/recepty/zavtraki/yachnevaya-kasha-na-mindalnom-moloke-91833
 b https://www.edimdoma.ru/retsepty/135705-tselnozernovye-blinchiki
@@ -224,49 +225,366 @@ b https://eda.ru/recepty/zavtraki/smuzi-v-tarelke-125251
 b https://eda.ru/recepty/zavtraki/kuskus-s-mango-i-kokosovymi-slivkami-81340'''
 
 
+def build_recipes(links):
 
-recipe_types = [
-    BREAKFAST,
-    LUNCH,
-    SNACK,
-    DINNER
-]
+    recipes = {
+        'b': [],
+        'l': [],
+        'd': [],
+        's': []
+    }
 
-df_rt = {
-    'b': BREAKFAST,
-    'l': LUNCH,
-    's': SNACK,
-    'd': DINNER,
-}
-
-def create_day_menu(links, only_day_menu=False):
-    recipes = []
     code_recipes = {}
-  
-    if not only_day_menu:
-        i = 0
-        for row in links.split('\n'):
-            i += 1
-            row = row.strip()
-            if row == '':
-                print(row)
-                continue
-            rt, link = row.split(' ')
-            
+    i = 0
+    at_all = len(links)
+    for rt, link in links:
+        time_one = time.time()
 
-            print(df_rt[rt].name, link, parse_page(link))
-            recipe = Recipe(recipe_type=df_rt[rt], link=link, code=i)
-            recipes.append(recipe)
-            code_recipes[recipe.code] = recipe
+        
+        i += 1
 
-        recipes = sorted(recipes, key=lambda x: x.code)
+        recipe = Recipe(recipe_type=abr_rt[rt], link=link, code=i)
+        recipes[rt].append(recipe)
+        code_recipes[recipe.code] = recipe
 
-        with open(RECIPES_PATH, 'wb') as file:
-            pickle.dump(recipes, file)
+        time_one = time.time() - time_one
+        print(f'{int(i * 100 / at_all)}% {i} / {at_all}')
 
-        with open(CODE_RECIPES_PATH, 'wb') as file:
-            pickle.dump(code_recipes, file)
+    save_pck(recipes['b'], BREAKFASTS_PATH)
+    save_pck(recipes['l'], LUNCHS_PATH)
+    save_pck(recipes['d'], DINNERS_PATH)
+    save_pck(recipes['s'], SNACKES_PATH)
 
-requests.get('https://api.telegram.org/bot975456275:AAGqcqmWa9miwQrpBn2VqA3cZs34IFEEYmI/sendMessage?chat_id=182301431&parse_mode=Markdown&text=[parse] start')
-create_day_menu(links=links)
-requests.get('https://api.telegram.org/bot975456275:AAGqcqmWa9miwQrpBn2VqA3cZs34IFEEYmI/sendMessage?chat_id=182301431&parse_mode=Markdown&text=[parse] stop')
+    save_pck(code_recipes, CODE_RECIPES_PATH)
+
+# noty('START!')
+# build_recipes(links=load_pck(CAT_REF_EDA_PATH))
+# noty('DONE!')
+
+breakfasts = load_pck(BREAKFASTS_PATH)
+lunchs = load_pck(LUNCHS_PATH)
+dinners = load_pck(DINNERS_PATH)
+snackes = load_pck(SNACKES_PATH)
+
+new_breakfasts = []
+new_lunchs = []
+new_dinners = []
+new_snackes = []
+
+p = [
+    (breakfasts, new_breakfasts),
+    (lunchs, new_lunchs),
+    (dinners, new_dinners),
+    (snackes, new_snackes),
+]
+for old, new in p:
+    for r in old:
+        if r.calories == -1.0 or r.protein == -1.0 or r.fat == -1.0 or r.corb == -1.0:
+            continue
+        new.append(r)
+        
+save_pck(new_breakfasts, BREAKFASTS_PATH)
+save_pck(new_lunchs, LUNCHS_PATH)
+save_pck(new_dinners, DINNERS_PATH)
+save_pck(new_snackes, SNACKES_PATH)
+
+# количество порций 
+# <span class="info-text js-portions-count-print" itemprop="recipeYield">6 порций</span>
+
+# ингредиенты
+# <div class="ingredients-list__content" cellpadding="0" cellspacing="0">
+#   <p class="ingredients-list__content-item content-item js-cart-ingredients" data-ingredient-object="{&quot;id&quot;: 14797, &quot;name&quot;: &quot;Темный шоколад&quot;, &quot;amount&quot;: &quot;100 г&quot;}">
+#     <span class="content-item__name tooltip">
+#       <span class="js-tooltip js-tooltip-ingredient" data-url="/Ingredient/RecipePreview" data-id="14797" data-hasqtip="1">
+#         Темный шоколад
+#       </span>
+#     </span>
+#     <span class="content-item__measure js-ingredient-measure-amount" data-id="14797">100 г</span>
+#   </p>
+#   <p class="ingredients-list__content-item content-item js-cart-ingredients" data-ingredient-object="{&quot;id&quot;: 13412, &quot;name&quot;: &quot;Сливочное масло&quot;, &quot;amount&quot;: &quot;180 г&quot;}">
+#     <span class="content-item__name tooltip">
+#       <span class="js-tooltip js-tooltip-ingredient" data-url="/Ingredient/RecipePreview" data-id="13412" data-hasqtip="2">
+#         Сливочное масло
+#       </span>
+#     </span>
+#     <span class="content-item__measure js-ingredient-measure-amount" data-id="13412">180 г</span>
+#   </p>
+#   <p class="ingredients-list__content-item content-item js-cart-ingredients" data-ingredient-object="{&quot;id&quot;: 14339, &quot;name&quot;: &quot;Коричневый сахар&quot;, &quot;amount&quot;: &quot;200 г&quot;}">
+#     <span class="content-item__name tooltip">
+#       <span class="js-tooltip js-tooltip-ingredient" data-url="/Ingredient/RecipePreview" data-id="14339" data-hasqtip="3">
+#         Коричневый сахар
+#       </span>
+#     </span>
+#     <span class="content-item__measure js-ingredient-measure-amount" data-id="14339">200 г</span>
+#   </p>
+#   <p class="ingredients-list__content-item content-item js-cart-ingredients" data-ingredient-object="{&quot;id&quot;: 13418, &quot;name&quot;: &quot;Яйцо куриное&quot;, &quot;amount&quot;: &quot;4 штуки&quot;}">
+#     <span class="content-item__name tooltip">
+#       <span class="js-tooltip js-tooltip-ingredient" data-url="/Ingredient/RecipePreview" data-id="13418" data-hasqtip="4">
+#         Яйцо куриное
+#       </span>
+#     </span>
+#     <span class="content-item__measure js-ingredient-measure-amount" data-id="13418">4 штуки</span>
+#   </p>
+#   <p class="ingredients-list__content-item content-item js-cart-ingredients" data-ingredient-object="{&quot;id&quot;: 13458, &quot;name&quot;: &quot;Пшеничная мука&quot;, &quot;amount&quot;: &quot;100 г&quot;}">
+#     <span class="content-item__name tooltip">
+#       <span class="js-tooltip js-tooltip-ingredient" data-url="/Ingredient/RecipePreview" data-id="13458" data-hasqtip="5">
+#         Пшеничная мука
+#       </span>
+#     </span>
+#     <span class="content-item__measure js-ingredient-measure-amount" data-id="13458">100 г</span>
+#   </p>
+#   <p class="ingredients-list__content-item content-item js-cart-ingredients" data-ingredient-object="{&quot;id&quot;: 13580, &quot;name&quot;: &quot;Грецкие орехи&quot;, &quot;amount&quot;: &quot;100 г&quot;}">
+#     <span class="content-item__name tooltip">
+#       <span class="js-tooltip js-tooltip-ingredient" data-url="/Ingredient/RecipePreview" data-id="13580" data-hasqtip="6">
+#         Грецкие орехи
+#       </span>
+#     </span>
+#     <span class="content-item__measure js-ingredient-measure-amount" data-id="13580">100 г</span>
+#   </p>
+# </div>
+
+
+# рецепт
+# <ul class="recipe__steps">
+#             <li class="instruction clearfix js-steps__parent print-preview" data-counter="1">
+#                     <img class="g-print-visible" width="176" src="//img03.rl0.ru/eda/c544x370i/s2.eda.ru/StaticContent/Photos/131113183908/131127174656/p_O.jpg" alt="">
+#                     <div class="js-steps" data-index="1">
+#                         <div class="instruction__image js-steps__preview print-invisible" data-full-size-src="//s2.eda.ru/StaticContent/Photos/131113183908/131127174656/p_O.jpg">
+#                             <div class="lazy-load-container" data-alt="Фото приготовления рецепта: Брауни (brownie) - шаг 1" data-title="Фото приготовления рецепта: Брауни (brownie) - шаг 1" data-src="https://img01.rl0.ru/eda/c434x295i/s2.eda.ru/StaticContent/Photos/131113183908/131127174656/p_O.jpg">
+#                                 <svg xmlns="http://www.w3.org/2000/svg" class="js-lazy-loading-svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="434" height="295" viewBox="0 0 434 295">
+#                                     <filter id="blur1" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+#                                         <feGaussianBlur stdDeviation="10 10" edgeMode="duplicate"></feGaussianBlur>
+#                                         <feComponentTransfer>
+#                                             <feFuncA type="discrete" tableValues="1 1"></feFuncA>
+#                                         </feComponentTransfer>
+#                                     </filter>
+#                                     <image filter="url(#blur1)" xlink:href="//img03.rl0.ru/eda/c544x370i/s2.eda.ru/StaticContent/Photos/131113183908/131127174656/p_O.jpg" x="0" y="0" width="100%" height="100%"></image>
+#                                 </svg>
+#                             <img alt="Фото приготовления рецепта: Брауни (brownie) - шаг 1" title="Фото приготовления рецепта: Брауни (brownie) - шаг 1" src="https://img01.rl0.ru/eda/c434x295i/s2.eda.ru/StaticContent/Photos/131113183908/131127174656/p_O.jpg" class="lazy-load-image --fullwidth"></div>
+#                         </div>
+#                     </div>
+#                 <div class="instruction__wrap">
+#                   <span style="white-space: pre-line" class="instruction__description js-steps__description ">
+#                     <span>1. </span>Шоколад разломать на кусочки и вместе со сливочным маслом растопить на водяной бане, не переставая все время помешивать лопаткой или деревянной ложкой. Получившийся густой шоколадный соус снять с водяной бани и оставить остывать.
+#                   </span>
+
+#                 </div>
+                
+#             </li>
+#             <li class="instruction clearfix js-steps__parent print-preview" data-counter="2">
+#                     <img class="g-print-visible" width="176" src="//img06.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/131127174657/p_O.jpg" alt="">
+#                     <div class="js-steps" data-index="2">
+#                         <div class="instruction__image js-steps__preview print-invisible" data-full-size-src="//s1.eda.ru/StaticContent/Photos/131113183908/131127174657/p_O.jpg">
+#                             <div class="lazy-load-container" data-alt="Фото приготовления рецепта: Брауни (brownie) - шаг 2" data-title="Фото приготовления рецепта: Брауни (brownie) - шаг 2" data-src="https://img03.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/131127174657/p_O.jpg">
+#                                 <svg xmlns="http://www.w3.org/2000/svg" class="js-lazy-loading-svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="434" height="295" viewBox="0 0 434 295">
+#                                     <filter id="blur1" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+#                                         <feGaussianBlur stdDeviation="10 10" edgeMode="duplicate"></feGaussianBlur>
+#                                         <feComponentTransfer>
+#                                             <feFuncA type="discrete" tableValues="1 1"></feFuncA>
+#                                         </feComponentTransfer>
+#                                     </filter>
+#                                     <image filter="url(#blur1)" xlink:href="//img06.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/131127174657/p_O.jpg" x="0" y="0" width="100%" height="100%"></image>
+#                                 </svg>
+#                             <img alt="Фото приготовления рецепта: Брауни (brownie) - шаг 2" title="Фото приготовления рецепта: Брауни (brownie) - шаг 2" src="https://img03.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/131127174657/p_O.jpg" class="lazy-load-image --fullwidth"></div>
+#                         </div>
+#                     </div>
+#                 <div class="instruction__wrap">
+#                   <span style="white-space: pre-line" class="instruction__description js-steps__description ">
+#                     <span>2. </span>Тем временем смешать яйца со ста граммами коричневого сахара: яйца разбить в отдельную миску и взбить, постепенно добавляя сахар. Взбивать можно при помощи миксера или вручную — как больше нравится, — но не меньше двух с половиной-трех минут.
+#                   </span>
+
+#                       <span class="linked-content clearfix print-invisible">
+
+#                           <span class="linked-content__image">
+#                               <img src="//s2.eda.ru/StaticContent/Photos/110801145258/1205042115583/p_O.jpg" alt="">
+
+#                           </span>
+#                           <span class="linked-content__info">
+#                               <a href="/wiki/instrumenty/mikser-63" target="_blank" class="linked-content__link">Инструмент</a>
+#                               <span class="linked-content__name js-popup-name">Миксер</span>
+#                           </span>
+#                           <a href="/wiki/instrumenty/mikser-63" target="_blank" class="block-link js-popup-link"></a>
+#                           <span class="linked-content__description js-popup-description" data-url="//s1.eda.ru/StaticContent/Photos/120214160714/120304023554/p_O.jpg">Взбивать яичные белки, а также замешивать прочие субстанции вроде фарша или теста удобно не вручную (так как это требует сил и времени), а с помощью миксера вроде KitchenAid. Например, у модели Artisan десять скоростных режимов и три разные насадки для работы с любыми консистенциями, к тому же это одновременно и универсальный кухонный комбайн.</span>
+#                       </span>
+#                 </div>
+                
+#             </li>
+#             <li class="instruction clearfix js-steps__parent print-preview" data-counter="3">
+#                     <img class="g-print-visible" width="176" src="//img08.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/1311271746570/p_O.jpg" alt="">
+#                     <div class="js-steps" data-index="3">
+#                         <div class="instruction__image js-steps__preview print-invisible" data-full-size-src="//s1.eda.ru/StaticContent/Photos/131113183908/1311271746570/p_O.jpg">
+#                             <div class="lazy-load-container" data-alt="Фото приготовления рецепта: Брауни (brownie) - шаг 3" data-title="Фото приготовления рецепта: Брауни (brownie) - шаг 3" data-src="https://img07.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/1311271746570/p_O.jpg">
+#                                 <svg xmlns="http://www.w3.org/2000/svg" class="js-lazy-loading-svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="434" height="295" viewBox="0 0 434 295">
+#                                     <filter id="blur1" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+#                                         <feGaussianBlur stdDeviation="10 10" edgeMode="duplicate"></feGaussianBlur>
+#                                         <feComponentTransfer>
+#                                             <feFuncA type="discrete" tableValues="1 1"></feFuncA>
+#                                         </feComponentTransfer>
+#                                     </filter>
+#                                     <image filter="url(#blur1)" xlink:href="//img08.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/1311271746570/p_O.jpg" x="0" y="0" width="100%" height="100%"></image>
+#                                 </svg>
+#                             <img alt="Фото приготовления рецепта: Брауни (brownie) - шаг 3" title="Фото приготовления рецепта: Брауни (brownie) - шаг 3" src="https://img07.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/1311271746570/p_O.jpg" class="lazy-load-image --fullwidth"></div>
+#                         </div>
+#                     </div>
+#                 <div class="instruction__wrap">
+#                   <span style="white-space: pre-line" class="instruction__description js-steps__description ">
+#                     <span>3. </span>Острым ножом на разделочной доске порубить грецкие орехи. Предварительно их можно поджарить на сухой сковороде до появления аромата, но это необязательная опция.
+#                   </span>
+
+#                       <span class="linked-content clearfix print-invisible">
+
+#                           <span class="linked-content__image">
+#                               <img src="//s1.eda.ru/StaticContent/Photos/110801145258/1205042116019/p_O.jpg" alt="">
+
+#                           </span>
+#                           <span class="linked-content__info">
+#                               <a href="/wiki/instrumenty/nozh-keramicheskij-94" target="_blank" class="linked-content__link">Инструмент</a>
+#                               <span class="linked-content__name js-popup-name">Нож керамический</span>
+#                           </span>
+#                           <a href="/wiki/instrumenty/nozh-keramicheskij-94" target="_blank" class="block-link js-popup-link"></a>
+#                           <span class="linked-content__description js-popup-description" data-url="//s1.eda.ru/StaticContent/Photos/120214160714/120304023859/p_O.jpg">Японские керамические ножи делают из оксида циркона — материала, занимающего на шкале твердости место посередине между сталью и алмазом. Притом они легче металлических, не окисляют продукты, не впитывают запахи и не требуют заточки минимум три года. </span>
+#                       </span>
+#                 </div>
+                
+#             </li>
+#             <li class="instruction clearfix js-steps__parent print-preview" data-counter="4">
+#                     <img class="g-print-visible" width="176" src="//img02.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/131127174659/p_O.jpg" alt="">
+#                     <div class="js-steps" data-index="4">
+#                         <div class="instruction__image js-steps__preview print-invisible" data-full-size-src="//s1.eda.ru/StaticContent/Photos/131113183908/131127174659/p_O.jpg">
+#                             <div class="lazy-load-container" data-alt="Фото приготовления рецепта: Брауни (brownie) - шаг 4" data-title="Фото приготовления рецепта: Брауни (brownie) - шаг 4" data-src="https://img05.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/131127174659/p_O.jpg">
+#                                 <svg xmlns="http://www.w3.org/2000/svg" class="js-lazy-loading-svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="434" height="295" viewBox="0 0 434 295">
+#                                     <filter id="blur1" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+#                                         <feGaussianBlur stdDeviation="10 10" edgeMode="duplicate"></feGaussianBlur>
+#                                         <feComponentTransfer>
+#                                             <feFuncA type="discrete" tableValues="1 1"></feFuncA>
+#                                         </feComponentTransfer>
+#                                     </filter>
+#                                     <image filter="url(#blur1)" xlink:href="//img02.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/131127174659/p_O.jpg" x="0" y="0" width="100%" height="100%"></image>
+#                                 </svg>
+#                             <img alt="Фото приготовления рецепта: Брауни (brownie) - шаг 4" title="Фото приготовления рецепта: Брауни (brownie) - шаг 4" src="https://img05.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/131127174659/p_O.jpg" class="lazy-load-image --fullwidth"></div>
+#                         </div>
+#                     </div>
+#                 <div class="instruction__wrap">
+#                   <span style="white-space: pre-line" class="instruction__description js-steps__description ">
+#                     <span>4. </span>В остывший растопленный со сливочным маслом шоколад аккуратно добавить оставшийся сахар, затем муку и измельченные орехи и все хорошо перемешать венчиком.
+#                   </span>
+
+#                 </div>
+                
+#             </li>
+#             <li class="instruction clearfix js-steps__parent print-preview" data-counter="5">
+#                     <img class="g-print-visible" width="176" src="//img03.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/1311271746590/p_O.jpg" alt="">
+#                     <div class="js-steps" data-index="5">
+#                         <div class="instruction__image js-steps__preview print-invisible" data-full-size-src="//s1.eda.ru/StaticContent/Photos/131113183908/1311271746590/p_O.jpg">
+#                             <div class="lazy-load-container" data-alt="Фото приготовления рецепта: Брауни (brownie) - шаг 5" data-title="Фото приготовления рецепта: Брауни (brownie) - шаг 5" data-src="https://img05.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/1311271746590/p_O.jpg">
+#                                 <svg xmlns="http://www.w3.org/2000/svg" class="js-lazy-loading-svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="434" height="295" viewBox="0 0 434 295">
+#                                     <filter id="blur1" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+#                                         <feGaussianBlur stdDeviation="10 10" edgeMode="duplicate"></feGaussianBlur>
+#                                         <feComponentTransfer>
+#                                             <feFuncA type="discrete" tableValues="1 1"></feFuncA>
+#                                         </feComponentTransfer>
+#                                     </filter>
+#                                     <image filter="url(#blur1)" xlink:href="//img03.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/1311271746590/p_O.jpg" x="0" y="0" width="100%" height="100%"></image>
+#                                 </svg>
+#                             <img alt="Фото приготовления рецепта: Брауни (brownie) - шаг 5" title="Фото приготовления рецепта: Брауни (brownie) - шаг 5" src="https://img05.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/1311271746590/p_O.jpg" class="lazy-load-image --fullwidth"></div>
+#                         </div>
+#                     </div>
+#                 <div class="instruction__wrap">
+#                   <span style="white-space: pre-line" class="instruction__description js-steps__description ">
+#                     <span>5. </span>Затем влить сахарно-яичную смесь и тщательно смешать с шоколадной массой. Цвет у теста должен получиться равномерным, без разводов.
+#                   </span>
+
+#                 </div>
+                
+#             </li>
+#             <li class="instruction clearfix js-steps__parent print-preview" data-counter="6">
+#                     <img class="g-print-visible" width="176" src="//img09.rl0.ru/eda/c544x370i/s2.eda.ru/StaticContent/Photos/131113183908/131127174700/p_O.jpg" alt="">
+#                     <div class="js-steps" data-index="6">
+#                         <div class="instruction__image js-steps__preview print-invisible" data-full-size-src="//s2.eda.ru/StaticContent/Photos/131113183908/131127174700/p_O.jpg">
+#                             <div class="lazy-load-container" data-alt="Фото приготовления рецепта: Брауни (brownie) - шаг 6" data-title="Фото приготовления рецепта: Брауни (brownie) - шаг 6" data-src="https://img07.rl0.ru/eda/c434x295i/s2.eda.ru/StaticContent/Photos/131113183908/131127174700/p_O.jpg">
+#                                 <svg xmlns="http://www.w3.org/2000/svg" class="js-lazy-loading-svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="434" height="295" viewBox="0 0 434 295">
+#                                     <filter id="blur1" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+#                                         <feGaussianBlur stdDeviation="10 10" edgeMode="duplicate"></feGaussianBlur>
+#                                         <feComponentTransfer>
+#                                             <feFuncA type="discrete" tableValues="1 1"></feFuncA>
+#                                         </feComponentTransfer>
+#                                     </filter>
+#                                     <image filter="url(#blur1)" xlink:href="//img09.rl0.ru/eda/c544x370i/s2.eda.ru/StaticContent/Photos/131113183908/131127174700/p_O.jpg" x="0" y="0" width="100%" height="100%"></image>
+#                                 </svg>
+#                             <img alt="Фото приготовления рецепта: Брауни (brownie) - шаг 6" title="Фото приготовления рецепта: Брауни (brownie) - шаг 6" src="https://img07.rl0.ru/eda/c434x295i/s2.eda.ru/StaticContent/Photos/131113183908/131127174700/p_O.jpg" class="lazy-load-image --fullwidth"></div>
+#                         </div>
+#                     </div>
+#                 <div class="instruction__wrap">
+#                   <span style="white-space: pre-line" class="instruction__description js-steps__description ">
+#                     <span>6. </span>Разогреть духовку до 200 градусов. Дно небольшой глубокой огнеупорной формы выстелить листом бумаги для выпечки или калькой. Перелить тесто в форму. Поставить в духовку и выпекать двадцать пять — тридцать минут до появления сахарной корочки.
+#                   </span>
+
+#                       <span class="linked-content clearfix print-invisible">
+
+#                           <span class="linked-content__image">
+#                               <img src="//s1.eda.ru/StaticContent/Photos/110801145258/1205042116013/p_O.jpg" alt="">
+
+#                           </span>
+#                           <span class="linked-content__info">
+#                               <a href="/wiki/instrumenty/termometr-dlja-duhovki-89" target="_blank" class="linked-content__link">Инструмент</a>
+#                               <span class="linked-content__name js-popup-name">Термометр для духовки</span>
+#                           </span>
+#                           <a href="/wiki/instrumenty/termometr-dlja-duhovki-89" target="_blank" class="block-link js-popup-link"></a>
+#                           <span class="linked-content__description js-popup-description" data-url="//s1.eda.ru/StaticContent/Photos/110825150222/120304025725/p_O.jpg">Как на самом деле разогревается духовка, даже если устанавливаешь конкретную температуру, понять можно только с опытом. Лучше иметь под рукой маленький градусник, который ставится в духовой шкаф или просто вешается на решетку. И лучше, чтобы он показывал градусы по Цельсию и Фаренгейту одновременно и точно — как швейцарские часы. Термометр важен, когда надо строго соблюдать температурный режим: скажем, в случае выпечки. </span>
+#                       </span>
+#                 </div>
+                
+#             </li>
+#             <li class="instruction clearfix js-steps__parent print-preview" data-counter="7">
+#                     <img class="g-print-visible" width="176" src="//img05.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/131127174701/p_O.jpg" alt="">
+#                     <div class="js-steps" data-index="7">
+#                         <div class="instruction__image js-steps__preview print-invisible" data-full-size-src="//s1.eda.ru/StaticContent/Photos/131113183908/131127174701/p_O.jpg">
+#                             <div class="lazy-load-container" data-alt="Фото приготовления рецепта: Брауни (brownie) - шаг 7" data-title="Фото приготовления рецепта: Брауни (brownie) - шаг 7" data-src="https://img01.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/131127174701/p_O.jpg">
+#                                 <svg xmlns="http://www.w3.org/2000/svg" class="js-lazy-loading-svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="434" height="295" viewBox="0 0 434 295">
+#                                     <filter id="blur1" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+#                                         <feGaussianBlur stdDeviation="10 10" edgeMode="duplicate"></feGaussianBlur>
+#                                         <feComponentTransfer>
+#                                             <feFuncA type="discrete" tableValues="1 1"></feFuncA>
+#                                         </feComponentTransfer>
+#                                     </filter>
+#                                     <image filter="url(#blur1)" xlink:href="//img05.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/131127174701/p_O.jpg" x="0" y="0" width="100%" height="100%"></image>
+#                                 </svg>
+#                             <img alt="Фото приготовления рецепта: Брауни (brownie) - шаг 7" title="Фото приготовления рецепта: Брауни (brownie) - шаг 7" src="https://img01.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/131127174701/p_O.jpg" class="lazy-load-image --fullwidth"></div>
+#                         </div>
+#                     </div>
+#                 <div class="instruction__wrap">
+#                   <span style="white-space: pre-line" class="instruction__description js-steps__description ">
+#                     <span>7. </span>Готовый пирог вытащить из духовки, дать остыть и нарезать на квадратики острым ножом или ножом для пиццы — так кусочки получатся особенно ровными.
+#                   </span>
+
+#                 </div>
+                
+#             </li>
+#             <li class="instruction clearfix js-steps__parent print-preview" data-counter="8">
+#                     <img class="g-print-visible" width="176" src="//img06.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/1311271747010/p_O.jpg" alt="">
+#                     <div class="js-steps" data-index="8">
+#                         <div class="instruction__image js-steps__preview print-invisible" data-full-size-src="//s1.eda.ru/StaticContent/Photos/131113183908/1311271747010/p_O.jpg">
+#                             <div class="lazy-load-container" data-alt="Фото приготовления рецепта: Брауни (brownie) - шаг 8" data-title="Фото приготовления рецепта: Брауни (brownie) - шаг 8" data-src="https://img07.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/1311271747010/p_O.jpg">
+#                                 <svg xmlns="http://www.w3.org/2000/svg" class="js-lazy-loading-svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="434" height="295" viewBox="0 0 434 295">
+#                                     <filter id="blur1" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+#                                         <feGaussianBlur stdDeviation="10 10" edgeMode="duplicate"></feGaussianBlur>
+#                                         <feComponentTransfer>
+#                                             <feFuncA type="discrete" tableValues="1 1"></feFuncA>
+#                                         </feComponentTransfer>
+#                                     </filter>
+#                                     <image filter="url(#blur1)" xlink:href="//img06.rl0.ru/eda/c544x370i/s1.eda.ru/StaticContent/Photos/131113183908/1311271747010/p_O.jpg" x="0" y="0" width="100%" height="100%"></image>
+#                                 </svg>
+#                             <img alt="Фото приготовления рецепта: Брауни (brownie) - шаг 8" title="Фото приготовления рецепта: Брауни (brownie) - шаг 8" src="https://img07.rl0.ru/eda/c434x295i/s1.eda.ru/StaticContent/Photos/131113183908/1311271747010/p_O.jpg" class="lazy-load-image --fullwidth"></div>
+#                         </div>
+#                     </div>
+#                 <div class="instruction__wrap">
+#                   <span style="white-space: pre-line" class="instruction__description js-steps__description ">
+#                     <span>8. </span>Подавать брауни можно просто так, а можно посыпать сверху сахарной пудрой или разложить квадратики по тарелкам и украсить каждую порцию  шариком ванильного мороженого.
+#                   </span>
+
+#                 </div>
+                
+#             </li>
+#     </ul>
+
+

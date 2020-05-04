@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-	<h3>За день норма</h3>
+	<h3>Норма на день</h3>
 	Калории: {{ calories }} ккал<br>
     Белки: {{ protein }} г<br>
     Жиры: {{ fat }} г<br>
@@ -26,7 +26,7 @@
 		  <tr>
 		    <td class="tg-nrix">{{ d.num }}</td>
 		    {% for r in d.recipes %}
-		  		<th class="tg-nrix"><a href="{{ '/recipe/' + r.code|string }}">{{ r.name }}</a></th>
+		  		<th class="tg-nrix"><a href="{{ '/recipe/' + r.code|string }}">{{ r.name }}</a> <br> {{r.calories}}/{{r.protein}}/{{r.fat}}/{{r.corb}}</th>
 	  		{% endfor %}
 
 		  </tr>

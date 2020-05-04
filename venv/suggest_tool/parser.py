@@ -2,6 +2,9 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
+def noty(msg):
+    requests.get(f'https://api.telegram.org/bot975456275:AAGqcqmWa9miwQrpBn2VqA3cZs34IFEEYmI/sendMessage?chat_id=182301431&parse_mode=Markdown&text={msg}')
+
 def parse_page(link):
     if 'www.edimdoma.ru' in link:
         soup = BeautifulSoup(requests.get(link).text, 'html.parser')

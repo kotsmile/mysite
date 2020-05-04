@@ -23,9 +23,6 @@
         <p>{{ form.submit() }}</p>
     </form>
 
-	<a href="{{ url_for('admin_recipes_update') }}">Обновить меню на день</a> | 
-	<span style="color: {{ color }};">{{ update }}</span>
-	<br>
 	<table class="tg">
 	  <tr>
 	    <th class="tg-fymr">Код</th>
@@ -49,7 +46,7 @@
 		    <td class="tg-c3ow">{{ r.fat }}</td>
 		    <td class="tg-c3ow">{{ r.corb }}</td>
 
-		    <td class="tg-c3ow"><a href="{{ '/admin/delete_recipes/' + r.code|string + '&' + r.recipe_type.abr }}">X</a></td>
+		    <td class="tg-c3ow"><a href="{{ '/admin/delete_recipes/' + r.code|string}}">X</a></td>
 		  </tr>
 
 	  {% endfor %}

@@ -4,96 +4,22 @@ import pickle
 import time
 import pandas as pd
 import copy
+import random
 
-# bad
-def build_day_menu():
-    save_pck(1, UPDATE_PATH)
-
-    t1 = time.time()
-
-    recipes = load_pck(RECIPES_PATH)
-
-    code_recipes = {}
-    for r in recipes:
-        code_recipes[r.code] = r
-    save_pck(code_recipes, CODE_RECIPES_PATH)
-
-    columns=['Завтрак', 'Обед', 'Перекус', 'Ужин', 'Калории', 'Белки', 'Жиры', 'Углеводы']
-
-    day_menu = pd.DataFrame([], columns=columns)
-
-    day_menu = day_menu.astype({
-            'Завтрак': 'int32',
-            'Обед': 'int32',
-            'Перекус': 'int32',
-            'Ужин': 'int32',
-            'Калории': 'float16',
-            'Белки': 'float16',
-            'Жиры': 'float16',
-            'Углеводы': 'float16',
-    })
-
-    breakfasts = []
-    lunchs = []
-    snackes = []
-    dinners = []
-
-    for r in recipes:
-        if r.recipe_type.name == 'Завтрак':
-            breakfasts.append(r)
-        elif r.recipe_type.name == 'Обед':
-            lunchs.append(r)
-        elif r.recipe_type.name== 'Перекус':
-            snackes.append(r)
-        elif r.recipe_type.name == 'Ужин':
-            dinners.append(r)
-
-    print(len(breakfasts), len(lunchs), len(snackes), len(dinners))
-    i = 0
-    for b in breakfasts:
-        for l in lunchs:
-            for s in snackes:
-                for d in dinners:
-                    i += 1
-                    if not len({b.code, l.code, s.code, d.code}) == 4:
-                        continue
-                    row = [
-                        b.code,
-                        l.code,
-                        s.code,
-                        d.code,
-                        b.calories + l.calories + s.calories + d.calories,
-                        b.protein + l.protein + s.protein + d.protein,
-                        b.fat + l.fat + s.fat + d.fat,
-                        b.corb + l.corb + s.corb + d.corb,
-                    ]
-
-
-                    print(f'{int(i * 100 / (len(breakfasts) * len(lunchs) * len(snackes) * len(dinners)))}%, {int(day_menu.memory_usage().sum() / 1000000)} MB')
-                    day_menu = day_menu.append(pd.DataFrame([row], columns=columns))
-
-    day_menu.to_pickle(DAY_MENU_PATH)
-
-    print(f'time: {int(time.time() - t1)} sec')
-    save_pck(2, UPDATE_PATH)
-
-new_eq_conf = {
-    'const': -161,
-    'c_weight': 9.99,
-    'c_height': 6.25,
-    'c_age': -4.92,
-}
-save_pck(new_eq_conf, EQ_CONF_PATH)
 
 def get_menu(user):
 
     code_recipes = load_pck(CODE_RECIPES_PATH)
-    eq_conf = load_pck(EQ_CONF_PATH)
 
+    breakfasts = load_pck(BREAKFASTS_PATH)
+    lunchs = load_pck(LUNCHS_PATH)
+    dinners = load_pck(DINNERS_PATH)
+    snackes = load_pck(SNACKES_PATH)
+
+    eq_conf = load_pck(EQ_CONF_PATH)
     activity_levels = {al.abr: al for al in load_pck(ACTIVITY_LEVELS_PATH)}
     goals = {g.abr: g for g in load_pck(GOALS_PATH)}
     periods = {p.abr: p for p in load_pck(PERIODS_PATH)}
-    user.fat_percent = (1 - user.fat_percent / 100)
 
     min_metab = eq_conf['const']
     for k, v in eq_conf.items():
@@ -103,101 +29,139 @@ def get_menu(user):
 
     total_of_cal = min_metab * goals[user.goal].percent if min_metab * goals[user.goal].percent >= 1200 else 1200
 
-    error_percent_cal = 0.2
+    error_percent_cal = 0.05
+    error_percent_protein = 0.07
+    error_percent_fat = 0.05
+    error_percent_corb = 0.07
 
-    error_percent_protein = 0.2
-    error_percent_fat = 0.2
-    error_percent_corb = 0.3
+    search_error_percent_cal = 0.15
+    search_error_percent_protein = 0.15
+    search_error_percent_fat = 0.15
+    search_error_percent_corb = 0.15
 
     cal_with_activity = total_of_cal * activity_levels[user.activity_level].activity
 
-    need_protein = cal_with_activity * goals[user.goal].pfc[0] / 4 if cal_with_activity * goals[user.goal].pfc[0] / 4 >= 60 else 60
-    need_fat = cal_with_activity * goals[user.goal].pfc[1] / 9 if cal_with_activity * goals[user.goal].pfc[1] / 9 >= 35 else 60
-    need_corb = cal_with_activity * goals[user.goal].pfc[2] / 4
+    # protein
+    if cal_with_activity * (goals[user.goal].pfc[0] - error_percent_protein) / 4 >= 60:
+        min_need_protein = cal_with_activity * (goals[user.goal].pfc[0] - error_percent_protein) / 4
+    else:
+        min_need_protein = 60
+    if cal_with_activity * (goals[user.goal].pfc[0] + error_percent_fat) / 4 < 2 * user.weight:
+        max_need_protein = cal_with_activity * (goals[user.goal].pfc[0] + error_percent_fat) / 4
+    else:
+        max_need_protein = 2 * user.weight
 
-    print(total_of_cal)
-    print(need_protein)
-    print(need_fat)
-    print(need_corb)
+    # fat
+    if cal_with_activity * (goals[user.goal].pfc[1] - error_percent_fat) / 9 >= 35:
+        min_need_fat = cal_with_activity * (goals[user.goal].pfc[1] - error_percent_fat) / 9
+    else:
+        min_need_fat = 35
+    max_need_fat = cal_with_activity * (goals[user.goal].pfc[1] + error_percent_fat) / 9
 
-    all_options = []
-    for file_name in get_file_names(DAY_MENU_PATH): 
-        day_menu = pd.read_pickle(DAY_MENU_PATH + file_name)
+    # corb
+    min_need_corb = cal_with_activity * (goals[user.goal].pfc[2] - error_percent_corb) / 4
+    max_need_corb = cal_with_activity * (goals[user.goal].pfc[2] + error_percent_corb) / 4
 
-        options = day_menu[
-            (total_of_cal * (1 + error_percent_cal) >= day_menu['Калории']) & 
-            (total_of_cal * (1 - error_percent_cal) <= day_menu['Калории']) &
-            (need_protein * (1 + error_percent_protein) >= day_menu['Белки']) & 
-            (need_protein * (1 - error_percent_protein) <= day_menu['Белки']) &
-            (need_fat * (1 + error_percent_fat) >= day_menu['Жиры']) & 
-            (need_fat * (1 - error_percent_fat) <= day_menu['Жиры']) &
-            (need_corb * (1 + error_percent_corb) >= day_menu['Углеводы']) & 
-            (need_corb * (1 - error_percent_corb) <= day_menu['Углеводы'])
-        ]
-        all_options.append(options)
-        print(file_name)
+    rts = ['Завтрак', 'Обед', 'Ужин']
 
-    raw_options = pd.concat(all_options)
-    
+    recipes = {'Завтрак': breakfasts, 'Обед': lunchs, 'Ужин': dinners}
 
-    columns=['Завтрак', 'Обед', 'Перекус', 'Ужин', 'Калории', 'Белки', 'Жиры', 'Углеводы']
-    options = pd.DataFrame([], columns=columns)
-    options = options.astype({
-            'Завтрак': 'int32',
-            'Обед': 'int32',
-            'Перекус': 'int32',
-            'Ужин': 'int32',
-            'Калории': 'float16',
-            'Белки': 'float16',
-            'Жиры': 'float16',
-            'Углеводы': 'float16',
-    })
+    for_types = goals[user.goal].for_types
 
-    for index, row in raw_options.iterrows():
-        if (code_recipes[row['Завтрак']].name == code_recipes[row['Обед']].name or 
-            code_recipes[row['Завтрак']].name == code_recipes[row['Перекус']].name or 
-            code_recipes[row['Завтрак']].name == code_recipes[row['Ужин']].name):
-            continue 
+    for_types_cpfc = {
+        rt: (
+            (cal_with_activity * (1 - error_percent_cal) * for_types[rt], cal_with_activity * (1 + error_percent_cal) * for_types[rt]),
+            (min_need_protein * for_types[rt], max_need_protein * for_types[rt]),
+            (min_need_fat * for_types[rt], max_need_fat * for_types[rt]),
+            (min_need_corb * for_types[rt], max_need_corb * for_types[rt])
+        ) for rt in rts
+    }
 
-        row = [
-            row['Завтрак'],
-            row['Обед'],
-            row['Перекус'],
-            row['Ужин'],
-            row['Калории'],
-            row['Белки'],
-            row['Жиры'],
-            row['Углеводы'],
-        ]
-        options = options.append(pd.DataFrame([row], columns=columns))
+    searched_recipes = {rt: [] for rt in rts}
 
-    print('s', options.shape[0])
-    if options.shape[0] == 0:
-        return -1
+    for rt in rts:
+        for r in recipes[rt]:
+            cal_cond = (
+                for_types_cpfc[rt][0][0] * (1 - search_error_percent_cal) <=
+                r.calories <= for_types_cpfc[rt][0][1]
+            )
+            protein_cond = (
+                for_types_cpfc[rt][1][0] * (1 - search_error_percent_protein) <=
+                r.protein <= for_types_cpfc[rt][1][1]
+            )
+            fat_cond = (
+                for_types_cpfc[rt][2][0] * (1 - search_error_percent_fat) <=
+                r.fat <= for_types_cpfc[rt][2][1]
+            )
+            corb_cond = (
+                for_types_cpfc[rt][3][0] * (1 - search_error_percent_corb) <=
+                r.corb <= for_types_cpfc[rt][3][1]
+            )
+
+            if cal_cond and protein_cond and fat_cond and corb_cond:
+                searched_recipes[rt].append(r)
+
+    print(f"found: {len(searched_recipes['Завтрак'])}, {len(searched_recipes['Обед'])}, {len(searched_recipes['Ужин'])}; snackes: {len(snackes)}")
+    good_pairs = {rt: [] for rt in rts}
+
+    for rt in rts:
+        for recipe in searched_recipes[rt]:
+            random.shuffle(snackes)
+            for snack in snackes:
+                cal_cond = (
+                    for_types_cpfc[rt][0][0] <= recipe.calories + snack.calories <= for_types_cpfc[rt][0][1]
+                )
+                protein_cond = (
+                    for_types_cpfc[rt][1][0] <= recipe.protein + snack.protein <= for_types_cpfc[rt][1][1]
+                )
+                fat_cond = (
+                    for_types_cpfc[rt][2][0] <= recipe.fat + snack.fat <= for_types_cpfc[rt][2][1]
+                )
+                corb_cond = (
+                    for_types_cpfc[rt][3][0] <= recipe.corb + snack.corb <= for_types_cpfc[rt][3][1]
+                )
+                if cal_cond and protein_cond and fat_cond and corb_cond:
+                    good_pairs[rt].append((recipe, snack))
+                    break
+    print(f"{len(good_pairs['Завтрак'])}, {len(good_pairs['Обед'])}, {len(good_pairs['Ужин'])}")
+    back_up_good_pair = good_pairs.copy()
+    amount_of_days = periods[user.period].days
     days = []
-    i = 0
-    rac = ['Завтрак', 'Обед', 'Перекус', 'Ужин']
-    while len(days) < periods[user.period].days:
-        opt = options.sample(frac=1)
-        for n in rac:
-            opt.drop_duplicates(subset=n, keep='first', inplace=True)
 
-        lil_days = []
-        for _, row in opt.iterrows():
-            recipes = []
-            for name in rac:
-                r = copy.copy(code_recipes[row[name]])
-                r.recipe_type = d1_recipe_types[name]
-                recipes.append(r)
+    for rt in rts:
+        random.shuffle(good_pairs[rt])
 
-            i += 1
-            day = Day(num=i, recipes=recipes)
-            lil_days.append(day)
+    used_snackes = []
+    for i in range(1, amount_of_days + 1):
+        recipes_for_day = [] 
+        for rt in rts:
+            find = False
+            while not find:
+                if len(good_pairs[rt]) == 0:
+                    good_pairs[rt] = back_up_good_pair[rt].copy()
+                    random.shuffle(good_pairs[rt])
+                    used_snackes = []
+                if good_pairs[rt][0][1] not in used_snackes:
+                    recipes_for_day.append(good_pairs[rt][0][0])
+                    recipes_for_day.append(good_pairs[rt][0][1])
+                    used_snackes.append(good_pairs[rt][0][1])
+                    find = True
 
-        days = days + lil_days
+                good_pairs[rt].pop(0)
+
+        day = Day(num=i, recipes=recipes_for_day)
+        days.append(day)
 
 
-    return days[:periods[user.period].days], total_of_cal, need_protein, need_fat, need_corb
+    
+    return (
+        days,
+        f"{int(for_types_cpfc['Завтрак'][0][0] / for_types['Завтрак'])} - {int(for_types_cpfc['Завтрак'][0][1] / for_types['Завтрак'])}",
+        f"{int(for_types_cpfc['Завтрак'][1][0] / for_types['Завтрак'])} - {int(for_types_cpfc['Завтрак'][1][1] / for_types['Завтрак'])}",
+        f"{int(for_types_cpfc['Завтрак'][2][0] / for_types['Завтрак'])} - {int(for_types_cpfc['Завтрак'][2][1] / for_types['Завтрак'])}",
+        f"{int(for_types_cpfc['Завтрак'][3][0] / for_types['Завтрак'])} - {int(for_types_cpfc['Завтрак'][3][1] / for_types['Завтрак'])}",
+    )
 
+    
 def add_score(id_, score):
     pass

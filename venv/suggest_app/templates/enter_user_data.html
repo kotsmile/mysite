@@ -30,14 +30,6 @@
         </p>
 
         <p>
-            {{ form.fat_percent.label }}<br>
-            {{ form.fat_percent(size=32) }}<br>
-            {% for error in form.fat_percent.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-
-        <p>
             {{ form.activity_level.label }}<br>
             {{ form.activity_level }}<br>
             {% for error in form.activity_level.errors %}

@@ -9,11 +9,16 @@ class ActivityLevel:
         self.activity = activity
 
 class Goal:
-    def __init__(self, name, abr, percent, pfc):
+    def __init__(self, name, abr, percent, pfc, breakfast, lunch, dinner):
         self.name = name
         self.abr = abr 
         self.percent = percent
         self.pfc = pfc
+        self.for_types = {
+            'Завтрак': breakfast,
+            'Обед': lunch,
+            'Ужин': dinner
+        }
 
 class Period:
     def __init__(self, name, abr, days):
@@ -28,7 +33,6 @@ class User:
         age=0, 
         weight=0,
         height=0,
-        fat_percent=0,
         activity_level=0,
         goal=0,
         period=0
@@ -38,8 +42,6 @@ class User:
         self.age = age
         self.weight = weight
         self.height = height
-
-        self.fat_percent = fat_percent
         
         self.activity_level = activity_level
         self.goal = goal
@@ -56,10 +58,6 @@ class Ingredient:
     def __init__(self, code):
         pass
 
-class RecipeType:
-    def __init__(self, name, abr):
-        self.name = name
-        self.abr = abr
 
 class Day:
     def __init__(self, num, recipes):
@@ -67,35 +65,49 @@ class Day:
         self.recipes = recipes
 
 
-BREAKFAST = RecipeType(name='Завтрак', abr='breakfast')
-LUNCH = RecipeType(name='Обед', abr='lunch')
-SNACK = RecipeType(name='Перекус', abr='snack')
-DINNER = RecipeType(name='Ужин', abr='dinner')
-
-recipe_types = [
-    BREAKFAST,
-    LUNCH,
-    SNACK,
-    DINNER
-]
-
-d_recipe_types = {
-    'breakfast': BREAKFAST,
-    'lunch': LUNCH,
-    'snack': SNACK,
-    'dinner': DINNER
-}
-
-d1_recipe_types = {
-    'Завтрак': BREAKFAST,
-    'Обед': LUNCH,
-    'Перекус': SNACK,
-    'Ужин': DINNER
-}
-
+class RecipeType:
+    def __init__(self, name, abr):
+        self.name = name
+        self.abr = abr
+        
 class Recipe:
     def __init__(self, link, code, recipe_type):
         self.recipe_type = recipe_type
         self.link = link
         self.code = code
         self.name, self.time, self.calories, self.protein, self.fat, self.corb = parse_page(link)
+
+
+BREAKFAST = RecipeType(name='Завтрак', abr='breakfast')
+LUNCH = RecipeType(name='Обед', abr='lunch')
+DINNER = RecipeType(name='Ужин', abr='dinner')
+SNACK = RecipeType(name='Перекус', abr='snack')
+
+recipe_types = [
+    BREAKFAST,
+    LUNCH,
+    DINNER,
+    SNACK,
+]
+
+
+abr_rt = {
+    'b': BREAKFAST,
+    'l': LUNCH,
+    'd': DINNER,
+    's': SNACK,
+}
+
+d_recipe_types = {
+    'breakfast': BREAKFAST,
+    'lunch': LUNCH,
+    'dinner': DINNER,
+    'snack': SNACK,
+}
+
+d1_recipe_types = {
+    'Завтрак': BREAKFAST,
+    'Обед': LUNCH,
+    'Ужин': DINNER,
+    'Перекус': SNACK,
+}

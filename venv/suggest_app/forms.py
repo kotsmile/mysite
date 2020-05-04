@@ -15,10 +15,10 @@ class AddActivityLevel(FlaskForm):
     submit = SubmitField('Добавить')
 
 class AddRecipe(FlaskForm):
-    link = StringField('Ссылка (edimdoma)', validators=[DataRequired()])
+    link = StringField('Ссылка (edimdoma / eda)', validators=[DataRequired()])
     recipe_type_choices = [(rt.abr, rt.name) for rt in recipe_types]
 
-    recipe_type = SelectMultipleField(
+    recipe_type = SelectField(
         'Прием пищи',
         choices=recipe_type_choices, 
         validators=[DataRequired()]
@@ -42,6 +42,10 @@ class AddGoal(FlaskForm):
     protein = FloatField('Процент белков, %', validators=[DataRequired()])
     fat = FloatField('Процент жиров, %', validators=[DataRequired()])
     corb = FloatField('Процент углеводов, %', validators=[DataRequired()])
+
+    breakfast = FloatField('Процент КБЖУ на завтрак, %', validators=[DataRequired()])
+    lunch = FloatField('Процент КБЖУ на обед, %', validators=[DataRequired()])
+    dinner = FloatField('Процент КБЖУ на ужин, %', validators=[DataRequired()])
 
     submit = SubmitField('Добавить')
 
