@@ -2,31 +2,40 @@
   <head>
 
     <title>{{ title }}</title>
-  <style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
-.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
-.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
-.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
-.tg .tg-fymr{font-weight:bold;border-color:inherit;text-align:center;vertical-align:top}
-</style>
-
-
-  
+    <style>
+      .tg  {border-collapse:collapse;border-spacing:0;}
+      .tg td, th{
+        font-family:Arial, sans-serif;
+        font-size:14px;
+        text-align:center;
+        padding:10px 5px;
+        border-style:solid;
+        border-width:1px;
+        overflow:hidden;
+        word-break:normal;
+        border-color:black;
+      }
+      .nav {
+        text-align:center;
+      }
+      body {
+        font-family:Arial, sans-serif;
+        font-size:14px;
+      }
+    </style>
   </head>
   <body>
-    <div>
-    <a href="{{ url_for('admin_activity_level') }}">Уровень активности<a> | 
-    <a href="{{ url_for('admin_goal') }}">Цели<a> | 
-    <a href="{{ url_for('admin_recipes') }}">Рецепты<a> | 
-    <a href="{{ url_for('admin_eq_conf') }}">Коэффициенты уравнение<a> | 
-    <a href="{{ url_for('admin_period') }}">Периоды<a> | 
-    <a href="{{ url_for('logout') }}">Выйти<a>
+    <div class="nav">
+      <a href="{{ url_for('admin_activity_level') }}">Уровень активности<a> |
+      <a href="{{ url_for('admin_goal') }}">Цели<a> |
+      <a href="{{ url_for('admin_recipes') }}">Рецепты<a> |
+      <a href="/admin/eq_conf/m">Коэффициенты уравнение для мужчины<a> |
+      <a href="/admin/eq_conf/f">Коэффициенты уравнение для женщины<a> |
+      <a href="{{ url_for('admin_period') }}">Периоды<a> |
+      <a href="{{ url_for('logout') }}">Выйти<a>
     </div>
-    <br>
-
     <hr>
-  
+    <p style="color:#FF0000">{{ error }}</p>
     {% block content %}{% endblock %}
   </body>
 </html>

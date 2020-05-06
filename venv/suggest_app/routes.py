@@ -2,20 +2,23 @@
 from flask_wtf import FlaskForm
 from wtforms import SelectField, SubmitField, FloatField, IntegerField
 from wtforms.validators import DataRequired
+
+from flask import render_template, redirect, url_for
+
+from flask_login import current_user, login_user, logout_user
+
 from suggest_app import app
-from suggest_app import db
-from flask import render_template
-from suggest_app.forms import *
 
-from flask import render_template, flash, redirect, url_for
-from suggest_tool.models import *
-from suggest_tool.calculator import get_menu
-from suggest_tool.paths import *
-
-import pandas as pd
-
-from flask_login import current_user, login_required, login_user, logout_user
 from suggest_app.models import Admin
+import suggest_app.forms as forms
+
+from suggest_tool.calculator import get_menu
+import suggest_tool.models_tool as mtool
+import suggest_tool.models as stmodels
+
+
+EXIST_ERROR = 'Уже существует'
+NONE_ERROR = ''
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -23,14 +26,18 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('admin'))
 
-    form = LoginForm()
+    form = forms.LoginForm()
     if form.validate_on_submit():
         admin = Admin.query.filter_by(login=form.login.data).first()
         if admin is None or not admin.check_password(form.password.data):
             return redirect(url_for('login'))
         login_user(admin, remember=False)
         return redirect(url_for('admin'))
-    return render_template('login.html', title='Войти в админ-панель', form=form)
+    return render_template(
+        'login.html',
+        title='Войти в админ-панель',
+        form=form,
+    )
 
 
 @app.route('/admin')
@@ -41,62 +48,58 @@ def admin():
     return redirect(url_for('create_suggest'))
 
 
-
 @app.route('/admin/activity_level', methods=['GET', 'POST'])
 def admin_activity_level():
     if current_user.is_authenticated:
 
-        activity_levels = load_pck(ACTIVITY_LEVELS_PATH)
-
-        form = AddActivityLevel()
+        form = forms.AddActivityLevel()
         if form.validate_on_submit():
             name = form.name.data
             abr = form.abr.data
             activity = form.activity.data
+            new_activity_level = stmodels.ActivityLevel(
+                name=name,
+                abr=abr,
+                activity=activity
+            )
 
-            find = False
-            for al in activity_levels:
-                if al.abr == abr:
-                    find = True
-                    break
-            if find:
-                return redirect(url_for('admin_activity_level_add'))
-            al = ActivityLevel(name=name, abr=abr, activity=activity)
-            
-            activity_levels.append(al)
+            if mtool.add_activity_level(new_activity_level):
+                error = NONE_ERROR
+            else:
+                error = EXIST_ERROR
 
-            activity_levels = sorted(activity_levels, key=lambda x: x.activity)
-
-            save_pck(activity_levels, ACTIVITY_LEVELS_PATH)
-
-            return redirect(url_for('admin_activity_level'))
+            return render_template(
+                'admin/activity_level.html',
+                activity_levels=sorted(
+                    mtool.get_activity_levels(),
+                    key=lambda x: x.activity
+                ),
+                title='Админ-панель',
+                form=form,
+                error=error
+            )
 
         return render_template(
-            'admin/activity_level.html', 
-            activity_levels=activity_levels, 
+            'admin/activity_level.html',
+            activity_levels=sorted(
+                mtool.get_activity_levels(),
+                key=lambda x: x.activity
+            ),
             title='Админ-панель',
-            form=form
+            form=form,
         )
+
     return redirect(url_for('create_suggest'))
+
 
 @app.route('/admin/delete_activity_level/<abr>')
 def delete_activity_level(abr):
     if current_user.is_authenticated:
 
-        activity_levels = load_pck(ACTIVITY_LEVELS_PATH)
-
-        new_activity_levels = []
-        for al in activity_levels:
-            if not al.abr == abr:
-                new_activity_levels.append(al)
-
-        new_activity_levels = sorted(new_activity_levels, key=lambda x: x.activity)
-
-        save_pck(new_activity_levels, ACTIVITY_LEVELS_PATH)
-
+        mtool.remove_activity_level(abr)
         return redirect(url_for('admin_activity_level'))
-    return redirect(url_for('create_suggest'))    
 
+    return redirect(url_for('create_suggest'))
 
 
 @app.route('/admin/goal', methods=['GET', 'POST'])
@@ -104,9 +107,7 @@ def admin_goal():
 
     if current_user.is_authenticated:
 
-        goals = load_pck(GOALS_PATH)
-
-        form = AddGoal()
+        form = forms.AddGoal()
         if form.validate_on_submit():
             name = form.name.data
             abr = form.abr.data
@@ -120,212 +121,140 @@ def admin_goal():
             lunch = form.lunch.data / 100
             dinner = form.dinner.data / 100
 
-            find = False
-            for g in goals:
-                if g.abr == abr:
-                    find = True
-                    break
-            if find:
-                return redirect(url_for('admin_goal'))
-            g = Goal(name=name, abr=abr, percent=percent, pfc=[protein, fat, corb], breakfast=breakfast, lunch=lunch, dinner=dinner)
-            
+            new_goal = stmodels.Goal(
+                name=name,
+                abr=abr,
+                percent=percent,
+                pfc=[protein, fat, corb],
+                breakfast=breakfast,
+                lunch=lunch,
+                dinner=dinner
+            )
 
-            goals.append(g)
+            if mtool.add_goal(new_goal):
+                error = NONE_ERROR
+            else:
+                error = EXIST_ERROR
 
-            goals = sorted(goals, key=lambda x: x.percent)
-
-
-            save_pck(goals, GOALS_PATH)
-
-            return redirect(url_for('admin_goal'))
+            return render_template(
+                'admin/goal.html',
+                goals=sorted(mtool.get_goals(), key=lambda x: x.percent),
+                title='Админ-панель',
+                form=form,
+                error=error
+            )
 
         return render_template(
-            'admin/goal.html', 
-            goals=goals, 
-            title='Админ-панель', 
-            form=form
-        )
-
-    return redirect(url_for('create_suggest'))
-
-@app.route('/admin/delete_goal/<abr>')
-def delete_goal(abr):
-    if current_user.is_authenticated:
-
-        goals = load_pck(GOALS_PATH)
-
-        new_goals = []
-        for g in goals:
-            if not g.abr == abr:
-                new_goals.append(g)
-
-        new_goals = sorted(new_goals, key=lambda x: x.percent)
-
-        save_pck(new_goals, GOALS_PATH)
-
-        return redirect(url_for('admin_goal'))
-    return redirect(url_for('create_suggest'))    
-
-
-
-@app.route('/admin/period', methods=['GET', 'POST'])
-def admin_period():
-    if current_user.is_authenticated:
-
-        periods = load_pck(PERIODS_PATH)
-
-        form = AddPeriod()
-        if form.validate_on_submit():
-            name = form.name.data
-            abr = form.abr.data
-            days = form.days.data
-
-            find = False
-            for p in periods:
-                if p.abr == abr:
-                    find = True
-                    break
-            if find:
-                return redirect(url_for('admin_period'))
-            p = Period(name=name, abr=abr, days=days)
-            
-
-            periods.append(p)
-
-            periods = sorted(periods, key=lambda x: x.days)
-
-
-            pickle.save_pck(periods, PERIODS_PATH)
-        
-            return redirect(url_for('admin_period'))
-        return render_template(
-            'admin/period.html', 
-            periods=periods, 
+            'admin/goal.html',
+            goals=sorted(mtool.get_goals(), key=lambda x: x.percent),
             title='Админ-панель',
             form=form,
         )
 
     return redirect(url_for('create_suggest'))
 
+
+@app.route('/admin/delete_goal/<abr>')
+def delete_goal(abr):
+    if current_user.is_authenticated:
+
+        mtool.remove_goal(abr)
+        return redirect(url_for('admin_goal'))
+
+    return redirect(url_for('create_suggest'))
+
+
+@app.route('/admin/period', methods=['GET', 'POST'])
+def admin_period():
+    if current_user.is_authenticated:
+        error = NONE_ERROR
+        form = forms.AddPeriod()
+        if form.validate_on_submit():
+            name = form.name.data
+            abr = form.abr.data
+            days = form.days.data
+
+            new_period = stmodels.Period(name=name, abr=abr, days=days)
+
+            if not mtool.add_period(new_period):
+                error = EXIST_ERROR
+
+        return render_template(
+            'admin/period.html',
+            periods=sorted(mtool.get_periods(), key=lambda x: x.days),
+            title='Админ-панель',
+            form=form,
+            error=error
+        )
+
+    return redirect(url_for('create_suggest'))
+
+
 @app.route('/admin/delete_period/<abr>')
 def delete_period(abr):
     if current_user.is_authenticated:
 
-        periods = pickle.load_pck(PERIODS_PATH)
-        new_periods = []
-        for p in periods:
-            if not p.abr == abr:
-                new_periods.append(p)
-
-        new_periods = sorted(new_periods, key=lambda x: x.days)
-
-        save_pck(new_periods, PERIODS_PATH)
+        mtool.remove_period(abr)
         return redirect(url_for('admin_period'))
 
-    return redirect(url_for('create_suggest'))    
-
+    return redirect(url_for('create_suggest'))
 
 
 @app.route('/admin/recipes', methods=['GET', 'POST'])
 def admin_recipes():
     if current_user.is_authenticated:
 
-        breakfasts = load_pck(BREAKFASTS_PATH)
-        lunchs = load_pck(LUNCHS_PATH)
-        dinners = load_pck(DINNERS_PATH)
-        snackes = load_pck(SNACKES_PATH)
-
-
-        dj = {
-            'breakfast': breakfasts,
-            'lunch': lunchs,
-            'dinner': dinners,
-            'snacke': snackes,
-        }
-
-        recipes = breakfasts + lunchs + dinners + snackes
-
-        form = AddRecipe()
+        form = forms.AddRecipe()
         if form.validate_on_submit():
             link = form.link.data
             rt = form.recipe_type.data
 
-            new_recipe = Recipe(link=link, recipe_type=d_recipe_types[rt], code=max([r.code for r in recipes]) + 1)
+            new_recipe = stmodels.Recipe(
+                link=link,
+                recipe_type=stmodels.abr_to_recipe_typed_recipe_types[rt]
+            )
 
-            find = False
-            for r in recipes:
-                if r.name == new_recipe.name and r.recipe_type.abr == new_recipe.recipe_type.abr:
-                    find = True
-                    break
-            if find:
-                return redirect(url_for('admin_recipes'))
-            
-            dj[rt].append(new_recipe)
+            if mtool.add_recipe(new_recipe):
+                error = NONE_ERROR
+            else:
+                error = EXIST_ERROR
 
-            save_pck(breakfasts, BREAKFASTS_PATH)
-            save_pck(lunchs, LUNCHS_PATH)
-            save_pck(dinners, DINNERS_PATH)
-            save_pck(snackes, SNACKES_PATH)
-
-            return redirect(url_for('admin_recipes'))
-        
+            return render_template(
+                'admin/recipes.html',
+                recipes=sorted(mtool.get_recipes(), key=lambda x: x.code),
+                title='Админ-панель',
+                form=form,
+                error=error
+            )
 
         return render_template(
-            'admin/recipes.html', 
-            recipes=sorted(recipes, key=lambda x: x.code),
+            'admin/recipes.html',
+            recipes=sorted(mtool.get_recipes(), key=lambda x: x.code),
             title='Админ-панель',
-            form=form
+            form=form,
         )
 
     return redirect(url_for('create_suggest'))
+
 
 @app.route('/admin/delete_recipes/<code>')
 def delete_recipes(code):
     code = int(code)
     if current_user.is_authenticated:
 
-        breakfasts = load_pck(BREAKFASTS_PATH)
-        lunchs = load_pck(LUNCHS_PATH)
-        dinners = load_pck(DINNERS_PATH)
-        snackes = load_pck(SNACKES_PATH)
-
-        new_breakfasts = []
-        new_lunchs = []
-        new_dinners = []
-        new_snackes = []
-
-        p = [
-            (breakfasts, new_breakfasts),
-            (lunchs, new_lunchs),
-            (dinners, new_dinners),
-            (snackes, new_snackes),
-        ]
-
-        for old, new in p:
-            for r in old:
-                if r.code == code:
-                    continue
-                new.append(r)
-
-        save_pck(new_breakfasts, BREAKFASTS_PATH)
-        save_pck(new_lunchs, LUNCHS_PATH)
-        save_pck(new_dinners, DINNERS_PATH)
-        save_pck(new_snackes, SNACKES_PATH)
-
+        mtool.remove_recipe(code)
         return redirect(url_for('admin_recipes'))
 
-    return redirect(url_for('create_suggest'))    
+    return redirect(url_for('create_suggest'))
 
 
-
-
-@app.route('/admin/eq_conf', methods=['GET', 'POST'])
-def admin_eq_conf():
+@app.route('/admin/eq_conf/<gender>', methods=['GET', 'POST'])
+def admin_eq_conf(gender):
     if current_user.is_authenticated:
 
-        eq_conf = load_pck(EQ_CONF_PATH)
+        eq_conf = mtool.get_eq_conf(gender)
 
-        form = EditEqConf()
+        form = forms.EditEqConf()
         if form.validate_on_submit():
             const = form.const.data
             c_weight = form.c_weight.data
@@ -339,20 +268,17 @@ def admin_eq_conf():
                 'c_age': c_age,
             }
 
-
-            save_pck(new_eq_conf, EQ_CONF_PATH)
-
+            mtool.set_eq_conf(new_eq_conf, gender)
             return redirect(url_for('admin_eq_conf'))
 
         return render_template(
-            'admin/eq_conf.html', 
-            eq_conf=eq_conf, 
+            'admin/eq_conf.html',
+            eq_conf=eq_conf,
             title='Админ-панель',
-            form=form
+            form=form,
         )
 
-    return redirect(url_for('create_suggest'))  
-
+    return redirect(url_for('create_suggest'))
 
 
 @app.route('/logout')
@@ -378,9 +304,7 @@ def logout():
 @app.route('/recipe/<code>')
 def recipe(code):
     code = int(code)
-    code_recipes = load_pck(CODE_RECIPES_PATH)
-    recipe = code_recipes[code]
-    
+    recipe = mtool.get_recipe(code)
 
     return render_template('recipe.html', title='Рецепт', recipe=recipe)
 
@@ -393,9 +317,9 @@ def create_suggest():
         weight = FloatField('Вес, кг', validators=[DataRequired()])
         height = FloatField('Рост, см', validators=[DataRequired()])
 
-        activity_levels = load_pck(ACTIVITY_LEVELS_PATH)
-        goals = load_pck(GOALS_PATH)
-        periods = load_pck(PERIODS_PATH)
+        activity_levels = mtool.get_activity_levels()
+        goals = mtool.get_goals()
+        periods = mtool.get_periods()
 
         activity_levels_choices = [(al.abr, al.name) for al in activity_levels]
         goals_choices = [(g.abr, g.name) for g in goals]
@@ -406,7 +330,7 @@ def create_suggest():
             choices=[
                 ('m', 'Мужской'),
                 ('f', 'Женский'),
-            ], 
+            ],
             validators=[DataRequired()]
         )
 
@@ -416,23 +340,23 @@ def create_suggest():
                 ('1', 'Крупное'),
                 ('2', 'Нормальное'),
                 ('3', 'Худощавое'),
-            ], 
+            ],
             validators=[DataRequired()]
         )
 
         activity_level = SelectField(
             'Уровень повседневной активности',
-            choices=activity_levels_choices, 
+            choices=activity_levels_choices,
             validators=[DataRequired()]
         )
         goal = SelectField(
-            'Цель', 
-            choices=goals_choices, 
+            'Цель',
+            choices=goals_choices,
             validators=[DataRequired()]
         )
         period = SelectField(
-            'Период', 
-            choices=periods_choices, 
+            'Период',
+            choices=periods_choices,
             validators=[DataRequired()]
         )
 
@@ -452,23 +376,23 @@ def create_suggest():
         quary = '&'.join(quaries)
         return redirect(f'/menu/' + quary)
 
-    return render_template('enter_user_data.html', title='Данные пользователя', form=form)
+    return render_template(
+        'enter_user_data.html',
+        title='Данные пользователя',
+        form=form
+    )
 
 
 @app.route('/menu/<quary>')
 def menu(quary):
+    print(quary)
     age, weight, height, gender, activity_level_abr, goal_abr, period_abr = quary.split('&')
 
     age = int(age)
     weight = float(weight)
     height = float(height)
 
-    users = load_pck(USERS_PATH)
-
-    new_id = users[-1].id_ + 1
-
-    user = User(
-        id_=new_id,
+    user = stmodels.User(
         age=age,
         weight=weight,
         height=height,
@@ -477,21 +401,19 @@ def menu(quary):
         goal=goal_abr,
         period=period_abr
     )
+    mtool.add_user(user)
 
-    users.append(user)
-    save_pck(users, USERS_PATH)
     ans = get_menu(user)
     if ans == -1:
         return 'Не можем подобрать для вас меню :('
     days, calories, protein, fat, corb = ans
-    
+
     return render_template(
-        'menu.html', 
-        title='Меню', 
+        'menu.html',
+        title='Меню',
         days=days,
         calories=calories,
         protein=protein,
         fat=fat,
         corb=corb
     )
-            

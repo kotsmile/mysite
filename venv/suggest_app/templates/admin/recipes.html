@@ -25,28 +25,28 @@
 
 	<table class="tg">
 	  <tr>
-	    <th class="tg-fymr">Код</th>
-	    <th class="tg-fymr">Название</th>
-	    <th class="tg-fymr">Время</th>
-	    <th class="tg-fymr">Прием пищи</th>
-	    <th class="tg-fymr">Калории, ккал</th>
-	    <th class="tg-fymr">Белки, г</th>
-	    <th class="tg-fymr">Жиры, г</th>
-	    <th class="tg-fymr">Углеводы, г</th>
-	    <th class="tg-fymr">Удалить</th>
+	    <th>Код</th>
+	    <th>Название</th>
+	    <th>Время</th>
+	    <th>Прием пищи</th>
+	    <th>Калории, ккал</th>
+	    <th>Белки, г</th>
+	    <th>Жиры, г</th>
+	    <th>Углеводы, г</th>
+	    <th>Удалить</th>
 	  </tr>
 	  {% for r in recipes %}
 		  <tr>
-		    <td class="tg-c3ow">{{ r.code }}</td>
-		    <td class="tg-c3ow"><a href="{{ r.link }}">{{ r.name }}</a></td>
-		    <td class="tg-c3ow">{{ r.time }}</td>
-		    <td class="tg-c3ow">{{ r.recipe_type.name }}</td>
-		    <td class="tg-c3ow">{{ r.calories }}</td>
-		    <td class="tg-c3ow">{{ r.protein }}</td>
-		    <td class="tg-c3ow">{{ r.fat }}</td>
-		    <td class="tg-c3ow">{{ r.corb }}</td>
+		    <td>{{ r.code }}</td>
+		    <td><a href="{{ r.link }}">{{ r.name }}</a></td>
+		    <td>{{ r.time }}</td>
+		    <td>{{ r.recipe_type.name }}</td>
+		    <td>{{ r.calories }}</td>
+		    <td>{{ r.protein }}</td>
+		    <td>{{ r.fat }}</td>
+		    <td>{{ r.corb }}</td>
 
-		    <td class="tg-c3ow"><a href="{{ '/admin/delete_recipes/' + r.code|string}}">X</a></td>
+		    <td><a href="{{ '/admin/delete_recipes/' + r.code|string}}">X</a></td>
 		  </tr>
 
 	  {% endfor %}

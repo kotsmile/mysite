@@ -4,12 +4,27 @@
 {% block content %}
     <h1>{{ recipe.name }}</h1>
     <h3>{{ recipe.recipe_type.name }}</h3>
+    <img src="{{ recipe.img_link }}">
+    <br>
     Время: {{ recipe.time }}<br>
+    {{ recipe.amount }}<br>
     Калории: {{ recipe.calories }} ккал<br>
     Белки: {{ recipe.protein }} г<br>
     Жиры: {{ recipe.fat }} г<br>
     Углеводы: {{ recipe.corb }} г<br>
+    Ингредиенты:
+    <ul>
+      {% for i in recipe.ings %}
+        <li>{{ i[0] }} ... {{ i[1] }}</li>
+      {% endfor %}
+    </ul>
+    Рецепт:
+    <ol>
+      {% for p in recipe.plan %}
+        <li>{{ p }}</li>
+      {% endfor %}
+    </ol>
 
     <a href="{{ recipe.link }}">Ссылка на рецепт</a>
-    
+
 {% endblock %}

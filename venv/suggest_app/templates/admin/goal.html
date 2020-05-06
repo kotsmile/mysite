@@ -77,31 +77,31 @@
 
 	<table class="tg">
 	  <tr>
-	    <th class="tg-fymr">Название</th>
-	    <th class="tg-fymr">Аббравиатура</th>
-	    <th class="tg-fymr">Процент от нормы, %</th>
-	    <th class="tg-fymr">Процент белков, %</th>
-	    <th class="tg-fymr">Процент жиров, %</th>
-	    <th class="tg-fymr">Процент углеводов, %</th>
-        <th class="tg-fymr">Процент КБЖУ на завтрак, %</th>
-        <th class="tg-fymr">Процент КБЖУ на обед, %</th>
-        <th class="tg-fymr">Процент КБЖУ на ужин, %</th>
-	    <th class="tg-fymr">Удалить</th>
+	    <th>Название</th>
+	    <th>Аббравиатура</th>
+	    <th>Процент от нормы, %</th>
+	    <th>Процент белков, %</th>
+	    <th>Процент жиров, %</th>
+	    <th>Процент углеводов, %</th>
+        <th>Процент КБЖУ на завтрак, %</th>
+        <th>Процент КБЖУ на обед, %</th>
+        <th>Процент КБЖУ на ужин, %</th>
+	    <th>Удалить</th>
 	  </tr>
 	  {% for g in goals %}
 		  <tr>
-		    <td class="tg-c3ow">{{ g.name }}</td>
-		    <td class="tg-c3ow">{{ g.abr }}</td>
-		    <td class="tg-c3ow">{{ (g.percent * 100)|round|int }}</td>
-		    <td class="tg-c3ow">{{ g.pfc[0] * 100 }}</td>
-		    <td class="tg-c3ow">{{ g.pfc[1] * 100 }}</td>
-		    <td class="tg-c3ow">{{ g.pfc[2] * 100 }}</td>
+		    <td>{{ g.name }}</td>
+		    <td>{{ g.abr }}</td>
+		    <td>{{ (g.percent * 100)|round|int }}</td>
+		    <td>{{ g.pfc[0] * 100 }}</td>
+		    <td>{{ g.pfc[1] * 100 }}</td>
+		    <td>{{ g.pfc[2] * 100 }}</td>
 
-            <td class="tg-c3ow">{{ g.for_types['Завтрак'] * 100 }}</td>
-            <td class="tg-c3ow">{{ g.for_types['Обед'] * 100 }}</td>
-            <td class="tg-c3ow">{{ g.for_types['Ужин'] * 100 }}</td>
+            <td>{{ g.for_types['breakfast'] * 100 }}</td>
+            <td>{{ g.for_types['lunch'] * 100 }}</td>
+            <td>{{ g.for_types['dinner'] * 100 }}</td>
 
-		    <td class="tg-c3ow"><a href="{{ '/admin/delete_goal/' + g.abr }}">X</a></td>
+		    <td><a href="{{ '/admin/delete_goal/' + g.abr }}">X</a></td>
 		  </tr>
 
 	  {% endfor %}

@@ -1,36 +1,37 @@
-from suggest_tool.paths import *
 from suggest_tool.parser import parse_page
-import pickle
+
 
 class ActivityLevel:
     def __init__(self, name, abr, activity):
         self.name = name
-        self.abr = abr 
+        self.abr = abr
         self.activity = activity
+
 
 class Goal:
     def __init__(self, name, abr, percent, pfc, breakfast, lunch, dinner):
         self.name = name
-        self.abr = abr 
+        self.abr = abr
         self.percent = percent
         self.pfc = pfc
         self.for_types = {
-            'Завтрак': breakfast,
-            'Обед': lunch,
-            'Ужин': dinner
+            'breakfast': breakfast,
+            'lunch': lunch,
+            'dinner': dinner
         }
+
 
 class Period:
     def __init__(self, name, abr, days):
         self.name = name
-        self.abr = abr 
+        self.abr = abr
         self.days = days
+
 
 class User:
     def __init__(
-        self, 
-        id_=0, 
-        age=0, 
+        self,
+        age=0,
         weight=0,
         height=0,
         activity_level=0,
@@ -38,23 +39,17 @@ class User:
         period=0,
         gender=0,
     ):
-        self.id_ = id_
 
         self.age = age
         self.weight = weight
         self.height = height
-        
+
         self.activity_level = activity_level
         self.goal = goal
 
         self.period = period
         self.gender = gender
 
-    def get_activity_level(self):
-        return activity_level_sym[self.activity_level]
-
-    def get_goal(self):
-        return goal_sym[self.goal]
 
 class Ingredient:
     def __init__(self, code):
@@ -71,13 +66,23 @@ class RecipeType:
     def __init__(self, name, abr):
         self.name = name
         self.abr = abr
-        
+
+
+# class Recipe:
+#     def __init__(self, link, recipe_type, code=0):
+#         self.recipe_type = recipe_type
+#         self.link = link
+#         self.code = code
+#         self.name, self.time, self.calories, self.protein, self.fat, self.corb = parse_page(link)
+#
+
 class Recipe:
-    def __init__(self, link, code, recipe_type):
+    def __init__(self, link, recipe_type, code=0):
         self.recipe_type = recipe_type
         self.link = link
         self.code = code
-        self.name, self.time, self.calories, self.protein, self.fat, self.corb = parse_page(link)
+        self.name, self.time, self.calories, self.protein, self.fat, self.corb, self.img_link, self.amount, self.ings, self.plan = parse_page(
+            link)
 
 
 BREAKFAST = RecipeType(name='Завтрак', abr='breakfast')
@@ -100,7 +105,7 @@ abr_rt = {
     's': SNACK,
 }
 
-d_recipe_types = {
+abr_to_recipe_type = {
     'breakfast': BREAKFAST,
     'lunch': LUNCH,
     'dinner': DINNER,

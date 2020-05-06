@@ -30,17 +30,17 @@
 
 	<table class="tg">
 	  <tr>
-	    <th class="tg-fymr">Название</th>
-	    <th class="tg-fymr">Аббравиатура</th>
-	    <th class="tg-fymr">Коэффициент активности</th>
-	    <th class="tg-fymr">Удалить</th>
+	    <th>Название</th>
+	    <th>Аббравиатура</th>
+	    <th>Коэффициент активности</th>
+	    <th>Удалить</th>
 	  </tr>
 	  {% for al in activity_levels %}
 		  <tr>
-		    <td class="tg-c3ow">{{ al.name }}</td>
-		    <td class="tg-c3ow">{{ al.abr }}</td>
-		    <td class="tg-c3ow">{{ al.activity }}</td>
-		    <td class="tg-c3ow"><a href="{{ '/admin/delete_activity_level/' + al.abr }}">X</a></td>
+		    <td>{{ al.name }}</td>
+		    <td>{{ al.abr }}</td>
+		    <td>{{ al.activity }}</td>
+		    <td><a href="{{ '/admin/delete_activity_level/' + al.abr }}">X</a></td>
 		  </tr>
 
 	  {% endfor %}

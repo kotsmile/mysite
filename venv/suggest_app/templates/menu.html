@@ -3,30 +3,24 @@
 {% block content %}
 	<h3>Норма на день</h3>
 	Калории: {{ calories }} ккал<br>
-    Белки: {{ protein }} г<br>
-    Жиры: {{ fat }} г<br>
-    Углеводы: {{ corb }} г<br>
+	Белки: {{ protein }} г<br>
+	Жиры: {{ fat }} г<br>
+	Углеводы: {{ corb }} г<br>
 
-    <h3>Меню</h3>
-	<style type="text/css">
-	.tg  {border-collapse:collapse;border-spacing:0;}
-	.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
-	.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
-	.tg .tg-cly1{text-align:left;vertical-align:middle}
-	.tg .tg-nrix{text-align:center;vertical-align:middle}
-	</style>
+	<h3>Меню</h3>
+
 	<table class="tg">
 	  <tr>
-	    <th class="tg-nrix">День</th>
+	    <th>День</th>
 	    {% for r in days[0].recipes %}
-		  	<th class="tg-nrix">{{ r.recipe_type.name }}</th>
+		  	<th>{{ r.recipe_type.name }}</th>
 	  	{% endfor %}
 	  </tr>
 	  {% for d in days %}
 		  <tr>
-		    <td class="tg-nrix">{{ d.num }}</td>
+		    <td>{{ d.num }}</td>
 		    {% for r in d.recipes %}
-		  		<th class="tg-nrix"><a href="{{ '/recipe/' + r.code|string }}">{{ r.name }}</a> <br> {{r.calories}}/{{r.protein}}/{{r.fat}}/{{r.corb}}</th>
+		  		<td><a href="{{ '/recipe/' + r.code|string }}">{{ r.name }}</a> <br> {{r.calories}}/{{r.protein}}/{{r.fat}}/{{r.corb}}</td>
 	  		{% endfor %}
 
 		  </tr>

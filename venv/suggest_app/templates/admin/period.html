@@ -31,17 +31,17 @@
 
 	<table class="tg">
 	  <tr>
-	    <th class="tg-fymr">Название</th>
-	    <th class="tg-fymr">Аббравиатура</th>
-	    <th class="tg-fymr">Количество дней</th>
-	    <th class="tg-fymr">Удалить</th>
+	    <th>Название</th>
+	    <th>Аббравиатура</th>
+	    <th>Количество дней</th>
+	    <th>Удалить</th>
 	  </tr>
 	  {% for p in periods %}
 		  <tr>
-		    <td class="tg-c3ow">{{ p.name }}</td>
-		    <td class="tg-c3ow">{{ p.abr }}</td>
-		    <td class="tg-c3ow">{{ p.days }}</td>
-		    <td class="tg-c3ow"><a href="{{ '/admin/delete_period/' + p.abr }}">X</a></td>
+		    <td>{{ p.name }}</td>
+		    <td>{{ p.abr }}</td>
+		    <td>{{ p.days }}</td>
+		    <td><a href="{{ '/admin/delete_period/' + p.abr }}">X</a></td>
 		  </tr>
 
 	  {% endfor %}

@@ -1,32 +1,23 @@
-import pickle
+USERS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/users.pck'
 
-USERS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/users.pck'
+ACTIVITY_LEVELS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/activity_level.pck'
+GOALS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/goals.pck'
+PERIODS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/periods.pck'
+EQ_CONF_M_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/eq_conf_m.pck'
+EQ_CONF_F_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/eq_conf_f.pck'
 
-DAY_MENU_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/menus/'
+BREAKFASTS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/recipes/breakfast.pck'
+LUNCHS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/recipes/lunchs.pck'
+DINNERS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/recipes/dinners.pck'
+SNACKES_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/recipes/snackes.pck'
 
-ACTIVITY_LEVELS_PATH =  '/home/kotsmile/mysite/venv/suggest_tool/tables/activity_level.pck'
-GOALS_PATH =  '/home/kotsmile/mysite/venv/suggest_tool/tables/goals.pck'
-PERIODS_PATH =  '/home/kotsmile/mysite/venv/suggest_tool/tables/periods.pck'
-EQ_CONF_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/eq_conf.pck'
+CODE_RECIPES_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/code_recipes.pck'
 
-BREAKFASTS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/recipes/breakfast.pck'
-LUNCHS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/recipes/lunchs.pck'
-DINNERS_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/recipes/dinners.pck'
-SNACKES_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/recipes/snackes.pck'
+CAT_REF_EDA_PATH = '/home/kotsmile/mysite/venv/suggest_tool/files/cat_ref_eda.pck'
 
-CAT_REF_EDA_PATH = '/home/kotsmile/mysite/venv/suggest_tool/tables/cat_ref_eda.pck'
-
-CODE_RECIPES_PATH =  '/home/kotsmile/mysite/venv/suggest_tool/tables/code_recipes.pck'
-
-def load_pck(path):
-    with open(path, 'rb') as file:
-        return pickle.load(file)
-
-def save_pck(obj, path):
-    with open(path, 'wb') as file:
-        pickle.dump(obj, file)
-
-def add_recipe(path, recipe):
-    r = load_pck(path)
-    r.append(recipe)
-    save_pck(r, path)
+abr_to_path_rt = {
+    'breakfast': BREAKFASTS_PATH,
+    'lunch': LUNCHS_PATH,
+    'dinner': DINNERS_PATH,
+    'snack': SNACKES_PATH,
+}
