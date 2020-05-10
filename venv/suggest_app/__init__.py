@@ -9,9 +9,9 @@ from flask_admin.menu import MenuLink
 app = Flask(__name__)
 app.config.from_object(Config)
 
-app.config['ENV'] = 'development'
-app.config['DEBUG'] = True
-app.config['TESTING'] = True
+# app.config['ENV'] = 'development'
+app.config['DEBUG'] = False
+# app.config['TESTING'] = True
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login = LoginManager(app)

@@ -176,6 +176,46 @@ def menu(quary):
 #     return redirect(url_for('create_suggest'))
 #
 
+#
+# @app.route('/fill_cat', methods=['GET', 'POST'])
+# def fill_cat():
+#     items = {}
+#
+#     with open('name_cal_protein_fat_corb_gramm.pck', 'rb') as f:
+#         items = pickle.load(f)
+#
+#     cat_name_to_name = {}
+#     for cat_name in items.keys():
+#         cat = Category(name=cat_name)
+#         cat_name_to_name[cat_name] = cat
+#         db.session.add(cat)
+#
+#     name_to_item = {}
+#     names = []
+#     for items_ in items.values():
+#         for item in items_:
+#             name, cal, protein, fat, corb, gramm, ref = item
+#             if name not in names:
+#                 names.append(name)
+#                 it = Item(
+#                     name=name,
+#                     calories=cal,
+#                     protein=protein,
+#                     fat=fat,
+#                     carbohydrate=corb,
+#                     gramm=gramm,
+#                     link=ref
+#                 )
+#                 name_to_item[name] = it
+#
+#     for cat_name in items.keys():
+#         for item in items[cat_name]:
+#             name, cal, protein, fat, corb, gramm, ref = item
+#             name_to_item[name].categories.append(cat_name_to_name[cat_name])
+#             db.session.add(name_to_item[name])
+#
+#     db.session.commit()
+#     return 'done!'
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

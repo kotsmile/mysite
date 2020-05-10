@@ -54,10 +54,10 @@ class EqConf(db.Model):
     age = db.Column(db.Float)
 
 
-categories = db.Table('categories',
-                      db.Column('item_id', db.Integer, db.ForeignKey('item.id')),
-                      db.Column('category_id', db.Integer, db.ForeignKey('category.id'))
-                      )
+categories = db.Table('categories_items',
+    db.Column('item_id', db.Integer, db.ForeignKey('item.id')),
+    db.Column('category_id', db.Integer, db.ForeignKey('category.id'))
+)
 
 
 class Item(db.Model):
