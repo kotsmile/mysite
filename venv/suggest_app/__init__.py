@@ -25,5 +25,7 @@ admin.add_view(models.LoginModelView(models.ActivityLevel, db.session))
 admin.add_view(models.LoginModelView(models.Period, db.session))
 admin.add_view(models.LoginModelView(models.EqConf, db.session))
 admin.add_view(models.LoginModelView(models.Item, db.session))
+admin.add_link(MenuLink(name='Выйти', category='', url='/logout'))
+
 admin.add_view(models.LoginModelView(models.Category, db.session))
 admin.add_view(models.LoginModelView(models.ItemGroup, db.session))
