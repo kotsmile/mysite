@@ -72,7 +72,7 @@ class Item(db.Model):
     categories = db.relationship('Category', secondary=categories,
                                  backref=db.backref('items', lazy='dynamic'))
     item_group_id = db.Column(db.Integer, db.ForeignKey('item_group.id'))
-    
+
     def __repr__(self):
         return self.name
 
@@ -87,6 +87,7 @@ class Category(db.Model):
 class ItemGroup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
+    percent = db.Column(db.Float)
     addresses = db.relationship('Item', backref='item_group',
                                 lazy='dynamic')
     def __repr__(self):

@@ -13,6 +13,8 @@ from suggest_tool.calculator import get_menu
 import suggest_tool.models as stmodels
 
 import pickle
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -31,9 +33,11 @@ def login():
         form=form,
     )
 
+
 @app.route('/add_group', methods=['GET', 'POST'])
 def add_to_group():
     pass
+
 
 @app.route('/logout')
 def logout():
@@ -65,48 +69,6 @@ def create_qeury(
 def get_from_query():
     pass
 
-#
-# @app.route('/fill_cat', methods=['GET', 'POST'])
-# def fill_cat():
-#     items = {}
-#     with open('name_cal_protein_fat_corb_gramm.pck', 'rb') as f:
-#         items = pickle.load(f)
-#     j = 0
-#     print([items.keys()])
-#
-#     for cat_name in items.keys():
-#         j += 1
-#         print(cat_name)
-#         cats = Category.query.filter_by(name=cat_name).all()
-#         if len(cats) == 0:
-#             cat = Category(
-#                 name=cat_name
-#             )
-#         else:
-#             cat = cats[0]
-#         i = 0
-#         for item in items[cat_name]:
-#             i += 1
-#             name, cal, protein, fat, corb, gramm, ref = item
-#             print(name, cal, protein, fat, corb, gramm, ref)
-#             print(f'{j}/{len(items.keys())}, {i}/{len(items[cat_name])}')
-#             its = Item.query.filter_by(name=name).all()
-#             if len(its) == 0:
-#                 it = Item(
-#                     name=name,
-#                     calories=cal,
-#                     protein=protein,
-#                     fat=fat,
-#                     carbohydrate=corb,
-#                     gramm=gramm,
-#                     link=ref
-#                 )
-#             else:
-#                 it = its[0]
-#             it.categories.append(cat)
-#             db.session.add(it)
-#     db.session.commit()
-#
 
 @app.route('/', methods=['GET', 'POST'])
 def create_suggest():
