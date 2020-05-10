@@ -1,10 +1,524 @@
-=ЕСЛИ(
-	(
-		(ЕСЛИ($B$31=1;B18;ЕСЛИ($B$31=2;B19;B20))*0,35)/4)>(B7*2);(B7*2);(
-		(
-			ЕСЛИ(
-				$B$31=1;B18;ЕСЛИ($B$31=2;B19;B20)
-			)*0,35
-		)/4
-	)
-)
+<ul class="flist flist__items">
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/fds" title="Все продукты">
+			<span class="ctgr_icon ctgr_icon_fds"></span>Все продукты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/met" title="Мясо">
+			<span class="ctgr_icon ctgr_icon_met"></span>Мясо		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/prm" title="Мясо убойных животных">
+			<span class="ctgr_icon ctgr_icon_prm"></span>Мясо убойных животных		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/wld" title="Мясо диких животных (дичь)">
+			<span class="ctgr_icon ctgr_icon_wld"></span>Мясо диких животных (дичь)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/sub" title="Субпродукты">
+			<span class="ctgr_icon ctgr_icon_sub"></span>Субпродукты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/plt" title="Мясо птицы (и субпродукты)">
+			<span class="ctgr_icon ctgr_icon_plt"></span>Мясо птицы (и субпродукты)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/fsh" title="Рыба">
+			<span class="ctgr_icon ctgr_icon_fsh"></span>Рыба		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/sea" title="Морепродукты">
+			<span class="ctgr_icon ctgr_icon_sea"></span>Морепродукты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/mol" title="Моллюски">
+			<span class="ctgr_icon ctgr_icon_mol"></span>Моллюски		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/crs" title="Ракообразные (раки, крабы, креветки)">
+			<span class="ctgr_icon ctgr_icon_crs"></span>Ракообразные (раки, крабы, креветки)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/alg" title="Морские водоросли">
+			<span class="ctgr_icon ctgr_icon_alg"></span>Морские водоросли		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/egg" title="Яйца, яичные продукты">
+			<span class="ctgr_icon ctgr_icon_egg"></span>Яйца, яичные продукты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/mlk" title="Молоко и молочные продукты">
+			<span class="ctgr_icon ctgr_icon_mlk"></span>Молоко и молочные продукты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/chs" title="Сыры">
+			<span class="ctgr_icon ctgr_icon_chs"></span>Сыры		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/sur" title="Молоко и кисломолочные продукты">
+			<span class="ctgr_icon ctgr_icon_sur"></span>Молоко и кисломолочные продукты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/ctn" title="Творог">
+			<span class="ctgr_icon ctgr_icon_ctn"></span>Творог		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/mlo" title="Другие продукты из молока">
+			<span class="ctgr_icon ctgr_icon_mlo"></span>Другие продукты из молока		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/soy" title="Соя и соевые продукты">
+			<span class="ctgr_icon ctgr_icon_soy"></span>Соя и соевые продукты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/vgb" title="Овощи и овощные продукты">
+			<span class="ctgr_icon ctgr_icon_vgb"></span>Овощи и овощные продукты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/tub" title="Клубнеплоды">
+			<span class="ctgr_icon ctgr_icon_tub"></span>Клубнеплоды		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/rts" title="Корнеплоды">
+			<span class="ctgr_icon ctgr_icon_rts"></span>Корнеплоды		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/cab" title="Капустные (овощи)">
+			<span class="ctgr_icon ctgr_icon_cab"></span>Капустные (овощи)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/sld" title="Салатные (овощи)">
+			<span class="ctgr_icon ctgr_icon_sld"></span>Салатные (овощи)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/spc" title="Пряные (овощи)">
+			<span class="ctgr_icon ctgr_icon_spc"></span>Пряные (овощи)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/blb" title="Луковичные (овощи)">
+			<span class="ctgr_icon ctgr_icon_blb"></span>Луковичные (овощи)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/sln" title="Паслёновые">
+			<span class="ctgr_icon ctgr_icon_sln"></span>Паслёновые		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/mln" title="Бахчевые">
+			<span class="ctgr_icon ctgr_icon_mln"></span>Бахчевые		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/leg" title="Бобовые">
+			<span class="ctgr_icon ctgr_icon_leg"></span>Бобовые		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/grn" title="Зерновые (овощи)">
+			<span class="ctgr_icon ctgr_icon_grn"></span>Зерновые (овощи)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/dsr" title="Десертные (овощи)">
+			<span class="ctgr_icon ctgr_icon_dsr"></span>Десертные (овощи)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/lvs" title="Зелень, травы, листья, салаты">
+			<span class="ctgr_icon ctgr_icon_lvs"></span>Зелень, травы, листья, салаты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/frt" title="Фрукты, ягоды, сухофрукты">
+			<span class="ctgr_icon ctgr_icon_frt"></span>Фрукты, ягоды, сухофрукты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/msh" title="Грибы">
+			<span class="ctgr_icon ctgr_icon_msh"></span>Грибы		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/fos" title="Жиры, масла">
+			<span class="ctgr_icon ctgr_icon_fos"></span>Жиры, масла		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/fts" title="Сало, животный жир">
+			<span class="ctgr_icon ctgr_icon_fts"></span>Сало, животный жир		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/oil" title="Растительные масла">
+			<span class="ctgr_icon ctgr_icon_oil"></span>Растительные масла		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/nts" title="Орехи">
+			<span class="ctgr_icon ctgr_icon_nts"></span>Орехи		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/crl" title="Крупы, злаки">
+			<span class="ctgr_icon ctgr_icon_crl"></span>Крупы, злаки		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/sds" title="Семена">
+			<span class="ctgr_icon ctgr_icon_sds"></span>Семена		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/ssn" title="Специи, пряности">
+			<span class="ctgr_icon ctgr_icon_ssn"></span>Специи, пряности		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/fls" title="Мука, продукты из муки">
+			<span class="ctgr_icon ctgr_icon_fls"></span>Мука, продукты из муки		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/flr" title="Мука и отруби, крахмал">
+			<span class="ctgr_icon ctgr_icon_flr"></span>Мука и отруби, крахмал		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/brd" title="Хлеб, лепёшки и др.">
+			<span class="ctgr_icon ctgr_icon_brd"></span>Хлеб, лепёшки и др.		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/pst" title="Макароны, лапша (паста)">
+			<span class="ctgr_icon ctgr_icon_pst"></span>Макароны, лапша (паста)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/swt" title="Сладости, кондитерские изделия">
+			<span class="ctgr_icon ctgr_icon_swt"></span>Сладости, кондитерские изделия		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/ffd" title="Фастфуд">
+			<span class="ctgr_icon ctgr_icon_ffd"></span>Фастфуд		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/wtr" title="Напитки, соки">
+			<span class="ctgr_icon ctgr_icon_wtr"></span>Напитки, соки		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/juc" title="Фруктовые соки и нектары">
+			<span class="ctgr_icon ctgr_icon_juc"></span>Фруктовые соки и нектары		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/alc" title="Алкогольные напитки">
+			<span class="ctgr_icon ctgr_icon_alc"></span>Алкогольные напитки		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_sub">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/bvr" title="Напитки (безалкогольные напитки)">
+			<span class="ctgr_icon ctgr_icon_bvr"></span>Напитки (безалкогольные напитки)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/spt" title="Пророщенные семена">
+			<span class="ctgr_icon ctgr_icon_spt"></span>Пророщенные семена		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/vgt" title="Вегетарианские продукты">
+			<span class="ctgr_icon ctgr_icon_vgt"></span>Вегетарианские продукты		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/vgn" title="Веганские продукты (без яиц и молока)">
+			<span class="ctgr_icon ctgr_icon_vgn"></span>Веганские продукты (без яиц и молока)		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/raw" title="Продукты для сыроедения">
+			<span class="ctgr_icon ctgr_icon_raw"></span>Продукты для сыроедения		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/fvs" title="Фрукты и овощи">
+			<span class="ctgr_icon ctgr_icon_fvs"></span>Фрукты и овощи		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/hrb" title="Продукты растительного происхождения">
+			<span class="ctgr_icon ctgr_icon_hrb"></span>Продукты растительного происхождения		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/anm" title="Продукты животного происхождения">
+			<span class="ctgr_icon ctgr_icon_anm"></span>Продукты животного происхождения		</a>
+	</li>
+
+
+
+
+
+	<li class="pr__brick pr__brd_b flist__li_main">
+		<a class="pr__ind_c_left" href="https://fitaudit.ru/categories/alb" title="Высокобелковые продукты">
+			<span class="ctgr_icon ctgr_icon_alb"></span>Высокобелковые продукты		</a>
+	</li>
+
+
+</ul>
