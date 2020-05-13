@@ -3,6 +3,7 @@
 
 {% block content %}
     <h1>Составить меню</h1>
+    <a href="/login">Админ-панель</a>
     <form action="" method="post">
         {{ form.hidden_tag() }}
         <p>
@@ -12,7 +13,13 @@
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
-
+        <p>
+            {{ form.gender.label }}<br>
+            {{ form.gender }}<br>
+            {% for error in form.gender.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
         <p>
             {{ form.weight.label }}<br>
             {{ form.weight(size=32) }}<br>
@@ -20,7 +27,6 @@
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
-
         <p>
             {{ form.height.label }}<br>
             {{ form.height(size=32) }}<br>
@@ -30,17 +36,25 @@
         </p>
 
         <p>
-            {{ form.gender.label }}<br>
-            {{ form.gender }}<br>
-            {% for error in form.gender.errors %}
+            {{ form.wg.label }}<br>
+            {{ form.wg(size=32) }}<br>
+            {% for error in form.wg.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.cg.label }}<br>
+            {{ form.cg(size=32) }}<br>
+            {% for error in form.cg.errors %}
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
 
+
         <p>
-            {{ form.body_type.label }}<br>
-            {{ form.body_type }}<br>
-            {% for error in form.body_type.errors %}
+            {{ form.real_calories.label }}<br>
+            {{ form.real_calories(size=32) }}<br>
+            {% for error in form.real_calories.errors %}
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
@@ -54,6 +68,15 @@
         </p>
 
         <p>
+            {{ form.eater_type.label }}<br>
+            {{ form.eater_type }}<br>
+            {% for error in form.eater_type.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+
+
+        <p>
             {{ form.goal.label }}<br>
             {{ form.goal }}<br>
             {% for error in form.goal.errors %}
@@ -61,13 +84,6 @@
             {% endfor %}
         </p>
 
-        <p>
-            {{ form.period.label }}<br>
-            {{ form.period }}<br>
-            {% for error in form.period.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
 
         <p>{{ form.submit() }}</p>
     </form>

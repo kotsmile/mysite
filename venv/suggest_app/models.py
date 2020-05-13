@@ -33,12 +33,6 @@ class ActivityLevel(db.Model):
     activity_level = db.Column(db.Float)
 
 
-class Period(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64))
-    days = db.Column(db.Integer)
-
-
 class Goal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
@@ -55,10 +49,16 @@ class EqConf(db.Model):
 
 
 categories = db.Table('categories_items',
-    db.Column('item_id', db.Integer, db.ForeignKey('item.id')),
-    db.Column('category_id', db.Integer, db.ForeignKey('category.id'))
-)
-
+                      db.Column(
+                          'item_id',
+                          db.Integer,
+                          db.ForeignKey('item.id')
+                      ),
+                      db.Column(
+                          'category_id',
+                          db.Integer,
+                          db.ForeignKey('category.id')
+                      ))
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -69,12 +69,17 @@ class Item(db.Model):
     fat = db.Column(db.Float)
     carbohydrate = db.Column(db.Float)
     link = db.Column(db.String(64))
-    categories = db.relationship('Category', secondary=categories,
-                                 backref=db.backref('items', lazy='dynamic'))
+    categories = db.relationship(
+        'Category',
+        secondary=categories,
+        backref=db.backref('items', lazy='dynamic')
+    )
     item_group_id = db.Column(db.Integer, db.ForeignKey('item_group.id'))
+
 
     def __repr__(self):
         return self.name
+
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -90,9 +95,48 @@ class ItemGroup(db.Model):
     percent = db.Column(db.Float)
     addresses = db.relationship('Item', backref='item_group',
                                 lazy='dynamic')
+
     def __repr__(self):
         return self.name
 
+
+class MealType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64))
+    combo = db.relationship('Combination', backref='meal_type',
+                                lazy='dynamic')
+
+    def __repr__(self):
+        return self.name
+
+
+combination_item_group = db.Table('combination_item_group',
+                      db.Column(
+                          'combination_id',
+                          db.Integer,
+                          db.ForeignKey('combination.id')
+                      ),
+                      db.Column(
+                          'item_group_id',
+                          db.Integer,
+                          db.ForeignKey('item_group.id')
+                      ))
+
+
+
+
+class Combination(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64))
+    item_groups = db.relationship(
+        'ItemGroup',
+        secondary=combination_item_group,
+        backref=db.backref('combinations', lazy='dynamic')
+    )
+    meal_type_id = db.Column(db.Integer, db.ForeignKey('meal_type.id'))
+
+    def __repr__(self):
+        return self.name
 
 
 class AdminView(AdminIndexView):

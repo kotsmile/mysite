@@ -1,18 +1,26 @@
 # -*- coding: utf-8 -*-
-from flask import render_template, redirect, url_for
+from flask import render_template, redirect, url_for, jsonify
 
 from flask_login import current_user, login_user, logout_user
 
 from suggest_app import app, db
 
-from suggest_app.models import User, ActivityLevel, Period, Goal, Item, Category
+import suggest_app.models as models
+from suggest_app.models import ActivityLevel, Goal, Item, Category
 import suggest_app.forms as forms
 from suggest_app.forms import RegistrationForm
 
-from suggest_tool.calculator import get_menu
-import suggest_tool.models as stmodels
+import suggest_tool.calculator as calculator
+from suggest_tool.models import User
 
 import pickle
+
+import io
+import base64
+
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -22,7 +30,7 @@ def login():
 
     form = forms.LoginForm()
     if form.validate_on_submit():
-        admin = User.query.filter_by(login=form.login.data).first()
+        admin = models.User.query.filter_by(login=form.login.data).first()
         if admin is None or not admin.check_password(form.password.data):
             return redirect(url_for('login'))
         login_user(admin, remember=False)
@@ -45,61 +53,33 @@ def logout():
     return redirect(url_for('create_suggest'))
 
 
-def create_qeury(
-    age,
-    weight,
-    height,
-    gender,
-    activity_level,
-    goal,
-    period,
-):
-    quaries = [
-        str(age),
-        str(weight),
-        str(height),
-        str(gender),
-        str(activity_level),
-        str(goal),
-        str(period),
-    ]
-    return '&'.join(quaries)
-
-
-def get_from_query():
-    pass
-
-
 @app.route('/', methods=['GET', 'POST'])
 def create_suggest():
 
     activity_levels_choices = [
-        (el.id, el.name) for el in ActivityLevel.query.all()
+        (str(el.id), el.name) for el in ActivityLevel.query.all()
     ]
     goals_choices = [
-        (el.id, el.name) for el in Goal.query.all()
+        (str(el.id), el.name) for el in Goal.query.all()
     ]
-    periods_choices = [
-        (el.id, el.name) for el in Period.query.all()
-    ]
-
     form = forms.CreateSuggest()
     form.activity_level.choices = activity_levels_choices
     form.goal.choices = goals_choices
-    form.period.choices = periods_choices
     if form.validate_on_submit():
-
-        quary = create_qeury(
+        user = User(
             age=form.age.data,
+            gender=form.gender.data,
             weight=form.weight.data,
             height=form.height.data,
-            gender=form.gender.data,
+            wg=form.wg.data,
+            cg=form.cg.data,
+            real_calories=form.real_calories.data,
             activity_level=form.activity_level.data,
+            eater_type=form.eater_type.data,
             goal=form.goal.data,
-            period=form.period.data,
         )
 
-        return redirect(f'/menu/' + quary)
+        return redirect(f'/suggest/' + user.to_query())
 
     return render_template(
         'enter_user_data.html',
@@ -108,114 +88,57 @@ def create_suggest():
     )
 
 
-@app.route('/menu/<quary>')
-def menu(quary):
-    print(quary)
-    age, weight, height, gender, activity_level_abr, goal_abr, period_abr = quary.split('&')
+def get_img_obj(x, y, x_label, y_label):
+    fig = Figure()
+    axis = fig.add_subplot(1, 1, 1)
+    axis.set_xlabel(x_label)
+    axis.set_ylabel(y_label)
+    axis.grid()
+    axis.plot(x, y, '-ro')
 
-    age = int(age)
-    weight = float(weight)
-    height = float(height)
+    png_image = io.BytesIO()
+    FigureCanvas(fig).print_png(png_image)
 
-    user = stmodels.User(
-        age=age,
-        weight=weight,
-        height=height,
-        gender=gender,
-        activity_level=activity_level_abr,
-        goal=goal_abr,
-        period=period_abr
+    png_image_B64_string = "data:image/png;base64,"
+    png_image_B64_string += base64.b64encode(png_image.getvalue()).decode('utf8')
+
+    return png_image_B64_string
+
+
+@app.route('/suggest/<query>')
+def suggest(query):
+    print(query)
+
+    user = User(query=query)
+
+    weight_values, calorie_values, fat_percent = calculator.get_plan(user)
+
+    image_w = get_img_obj(
+        x=range(1, len(weight_values) + 1),
+        y=weight_values,
+        x_label='День',
+        y_label='Вес, кг',
     )
-
-    ans = get_menu(user)
-    if ans == -1:
-        return 'Не можем подобрать для вас меню :('
-    days, calories, protein, fat, corb = ans
-
+    image_с = get_img_obj(
+        x=range(1, len(calorie_values) + 1),
+        y=calorie_values,
+        x_label='День',
+        y_label='Норма калорий на день, ккал',
+    )
+    image_f = get_img_obj(
+        x=range(1, len(fat_percent) + 1),
+        y=fat_percent,
+        x_label='День',
+        y_label='Процент жира, %',
+    )
+    calculator.get_menu_on_day(calorie_values[0], user)
     return render_template(
-        'menu.html',
-        title='Меню',
-        days=days,
-        calories=calories,
-        protein=protein,
-        fat=fat,
-        corb=corb
+        'suggest.html',
+        image_w=image_w,
+        image_c=image_с,
+        image_f=image_f,
     )
-#
-#
-# @app.route('/admin/eq_conf/<gender>', methods=['GET', 'POST'])
-# def admin_eq_conf(gender):
-#     if current_user.is_authenticated:
-#
-#         eq_conf = mtool.get_eq_conf(gender)
-#
-#         form = forms.EditEqConf()
-#         if form.validate_on_submit():
-#             const = form.const.data
-#             c_weight = form.c_weight.data
-#             c_height = form.c_height.data
-#             c_age = form.c_age.data
-#
-#             new_eq_conf = {
-#                 'const': const,
-#                 'c_weight': c_weight,
-#                 'c_height': c_height,
-#                 'c_age': c_age,
-#             }
-#
-#             mtool.set_eq_conf(new_eq_conf, gender)
-#             return redirect(url_for('admin_eq_conf'))
-#
-#         return render_template(
-#             'admin/eq_conf.html',
-#             eq_conf=eq_conf,
-#             title='Админ-панель',
-#             form=form,
-#         )
-#
-#     return redirect(url_for('create_suggest'))
-#
 
-#
-# @app.route('/fill_cat', methods=['GET', 'POST'])
-# def fill_cat():
-#     items = {}
-#
-#     with open('name_cal_protein_fat_corb_gramm.pck', 'rb') as f:
-#         items = pickle.load(f)
-#
-#     cat_name_to_name = {}
-#     for cat_name in items.keys():
-#         cat = Category(name=cat_name)
-#         cat_name_to_name[cat_name] = cat
-#         db.session.add(cat)
-#
-#     name_to_item = {}
-#     names = []
-#     for items_ in items.values():
-#         for item in items_:
-#             name, cal, protein, fat, corb, gramm, ref = item
-#             if name not in names:
-#                 names.append(name)
-#                 it = Item(
-#                     name=name,
-#                     calories=cal,
-#                     protein=protein,
-#                     fat=fat,
-#                     carbohydrate=corb,
-#                     gramm=gramm,
-#                     link=ref
-#                 )
-#                 name_to_item[name] = it
-#
-#     for cat_name in items.keys():
-#         for item in items[cat_name]:
-#             name, cal, protein, fat, corb, gramm, ref = item
-#             name_to_item[name].categories.append(cat_name_to_name[cat_name])
-#             db.session.add(name_to_item[name])
-#
-#     db.session.commit()
-#     return 'done!'
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
