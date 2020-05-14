@@ -88,14 +88,16 @@ def create_suggest():
     )
 
 
-def get_img_obj(x, y, x_label, y_label):
+def get_img_obj(x, y, x_label, y_label, hy):
     fig = Figure()
     axis = fig.add_subplot(1, 1, 1)
     axis.set_xlabel(x_label)
     axis.set_ylabel(y_label)
     axis.grid()
     axis.plot(x, y, '-ro')
-
+    axis.axhline(y=hy)
+    ticks_week = [1] + [i * 7 for i in range(1, (max(x)) // 7 + 1)]
+    axis.set_xticks(ticks_week)
     png_image = io.BytesIO()
     FigureCanvas(fig).print_png(png_image)
 
@@ -111,25 +113,28 @@ def suggest(query):
 
     user = User(query=query)
 
-    weight_values, calorie_values, fat_percent = calculator.get_plan(user)
+    weight_values, calorie_values, fat_percents, init_calories, goal_calories, init_weight, goal_weight, init_fat_percent, goal_fat_percent, days = calculator.get_plan(user)
 
     image_w = get_img_obj(
         x=range(1, len(weight_values) + 1),
         y=weight_values,
         x_label='День',
         y_label='Вес, кг',
+        hy=goal_weight,
     )
     image_с = get_img_obj(
         x=range(1, len(calorie_values) + 1),
         y=calorie_values,
         x_label='День',
         y_label='Норма калорий на день, ккал',
+        hy=goal_calories,
     )
     image_f = get_img_obj(
-        x=range(1, len(fat_percent) + 1),
-        y=fat_percent,
+        x=range(1, len(fat_percents) + 1),
+        y=[i * 100 for i in fat_percents],
         x_label='День',
         y_label='Процент жира, %',
+        hy=goal_fat_percent * 100,
     )
     calculator.get_menu_on_day(calorie_values[0], user)
     return render_template(
@@ -137,6 +142,15 @@ def suggest(query):
         image_w=image_w,
         image_c=image_с,
         image_f=image_f,
+        init_calories=init_calories,
+        goal_calories=goal_calories,
+        init_weight=init_weight,
+        goal_weight=goal_weight,
+        init_fat_percent=init_fat_percent,
+        goal_fat_percent=goal_fat_percent,
+        days=days,
+
+
     )
 
 

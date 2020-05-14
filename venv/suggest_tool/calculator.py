@@ -63,13 +63,13 @@ def calculate_calories(user):
 
 
 def fat_loose(fat_percent):
-    if 0.29 <= fat_percent <= 0.37:
+    if 0.29 <= fat_percent:
         return 1.15 / 7
     elif 0.22 <= fat_percent < 0.29:
         return 0.6 / 7
     elif 0.17 <= fat_percent < 0.22:
         return 0.35 / 7
-    elif 0.12 <= fat_percent < 0.16:
+    elif fat_percent < 0.16:
         return 0.15 / 7
 
 
@@ -79,6 +79,8 @@ LOOSE_CALORIES_PER_DAY = 200 / 7
 
 def get_plan(user):
 
+
+
     ideal_weight = calculate_ideal_weight(user)
 
     real_calories = user.real_calories
@@ -86,6 +88,7 @@ def get_plan(user):
 
     fat_now = user.weight - ideal_weight * (1 - IDEAL_FAT_PERCANT)
     fat_percent = fat_now / user.weight
+    init_fat = fat_percent
 
     calories_now = real_calories
     weight_now = user.weight
@@ -140,8 +143,12 @@ def get_plan(user):
 
         fat_percent = fat_now / weight_now
 
+    # weight_values.append(weight_now)
+    # calorie_values.append(calories_now)
+    # fat_percents.append(fat_percent)
 
-    return weight_values, calorie_values, fat_percents
+
+    return weight_values, calorie_values, fat_percents, user.real_calories, goal_calories, user.weight, ideal_weight, init_fat, IDEAL_FAT_PERCANT, days
 
 # choices=[
 #     ('usual', 'Обычный'),
@@ -154,7 +161,58 @@ def get_plan(user):
 # eq_conf = models.EqConf.query.filter_by(gender=user.gender).first()
 # goal = models.Goal.query.filter_by(id=user.goal).first()
 
+
+def get_pfc(calories, user, part=1):
+    error_percent_cal = 0.05
+    error_percent_protein = 0.07
+    error_percent_fat = 0.05
+    error_percent_carb = 0.07
+    goal = models.Goal.query.filter_by(id=user.goal).first()
+    # protein
+    if user.gender == 'm':
+        min_protein = user.weight * 1.5
+    else:
+        min_protein = 60
+
+    if calories * (goal.protein_percent / 100 - error_percent_protein) / 4 >= min_protein:
+        min_need_protein = calories * (goal.protein_percent / 100 - error_percent_protein) / 4
+    else:
+        min_need_protein = min_protein
+
+    if calories * (goal.protein_percent / 100 + error_percent_protein) / 4 < 2 * user.weight:
+        max_need_protein = calories * (goal.protein_percent / 100 + error_percent_protein) / 4
+    else:
+        max_need_protein = 2 * user.weight
+
+    # fat
+    if user.gender == 'm':
+        min_fat = 40
+    else:
+        min_fat = 35
+
+    if calories * (goal.fat_percent / 100 - error_percent_fat) / 9 >= min_fat:
+        min_need_fat = calories * (goal.fat_percent / 100 - error_percent_fat) / 9
+    else:
+        min_need_fat = min_fat
+    max_need_fat = calories * (goal.fat_percent / 100 + error_percent_fat) / 9
+
+    # corb
+    min_need_carb = calories * (goal.carbohydrate_percent / 100 - error_percent_carb) / 4
+    max_need_carb = calories * (goal.carbohydrate_percent / 100 + error_percent_carb) / 4
+
+    return [
+        (
+            calories * (1 - error_percent_cal) * part,
+            calories * (1 + error_percent_cal) * part,
+        ),
+        (min_need_protein * part, max_need_protein * part),
+        (min_need_fat * part, max_need_fat * part),
+        (min_need_carb * part, max_need_carb * part)
+    ]
+
+
 def get_menu_on_day(calories, user):
+
     name_vegan = 'Веганские продукты (без яиц и молока)'
     name_vegat = 'Вегетарианские продукты'
     name_syroed = 'Продукты для сыроедения'
@@ -176,22 +234,71 @@ def get_menu_on_day(calories, user):
         combinations = models.Combination.query.filter_by(meal_type=t).all()
         packs_item_groups = [c.item_groups for c in combinations]
         for item_groups in packs_item_groups:
+            items_for_item_groups = []
             for ig in item_groups:
                 if abr_to_name[user.eater_type] == -1:
                     valid_items = set()
                     for c in models.Category.query.all():
                         valid_items.update(set(c.items.all()))
                 else:
-                    valid_items = models.Category.query.filter_by(name=abr_to_name[user.eater_type]).first().items
+                    valid_items = models.Category.query.filter_by(
+                        name=abr_to_name[user.eater_type]).first().items
                 filtered_items_by_group = []
                 for item in valid_items:
                     if item.item_group == ig:
                         filtered_items_by_group.append(item)
 
-                print(ig.name)
-                print(*filtered_items_by_group, sep='\n')
+                items_for_item_groups.append((ig, filtered_items_by_group))
+            correct_items_for_item_groups = []
 
+            for ig, items in items_for_item_groups:
+                params_percent = get_pfc(
+                    calories, user, part=t.percent_of_CPFC_on_day / 100 * ig.percent / 100
+                )
+                print(params_percent)
+                correct_items = []
+                for it in items:
+                    print(it.calories, it.protein, it.fat, it.carbohydrate)
+                    try:
+                        min_gramms_on_calories = it.gramm * params_percent[0][0] / it.calories
+                        max_gramms_on_calories = it.gramm * params_percent[0][1] / it.calories
 
+                        min_gramms_on_protein = it.gramm * params_percent[1][0] / it.protein
+                        max_gramms_on_protein = it.gramm * params_percent[1][1] / it.protein
+
+                        min_gramms_on_fat = it.gramm * params_percent[2][0] / it.fat
+                        max_gramms_on_fat = it.gramm * params_percent[2][1] / it.fat
+
+                        min_gramms_on_carb = it.gramm * params_percent[3][0] / it.carbohydrate
+                        max_gramms_on_carb = it.gramm * params_percent[3][1] / it.carbohydrate
+                    except ZeroDivisionError:
+                        continue
+
+                    print(min_gramms_on_calories, min_gramms_on_protein, min_gramms_on_fat, min_gramms_on_carb)
+                    print(max_gramms_on_calories, max_gramms_on_protein, max_gramms_on_fat, max_gramms_on_carb)
+                    min_gramms = max([
+                        min_gramms_on_calories,
+                        min_gramms_on_protein,
+                        min_gramms_on_fat,
+                        min_gramms_on_carb
+                    ])
+
+                    max_gramms = min([
+                        max_gramms_on_calories,
+                        max_gramms_on_protein,
+                        max_gramms_on_fat,
+                        max_gramms_on_carb
+                    ])
+                    print('-----')
+                    print(min_gramms, max_gramms)
+                    print('-----')
+                    if max_gramms > min_gramms:
+                        correct_gramms = (max_gramms + min_gramms) / 2
+                        correct_items.append((correct_gramms, it))
+                    else:
+                        continue
+                correct_items_for_item_groups.append((ig, correct_items))
+            print(correct_items_for_item_groups)
 
 
 # class EqConf(db.Model):

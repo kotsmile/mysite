@@ -45,7 +45,7 @@ class CreateSuggest(FlaskForm):
         'Обхват груди, см', validators=[DataRequired(), NumberRange(**CG)]
     )
     real_calories = FloatField(
-        'Калорий на неделю на данный момент, ккал', validators=[DataRequired()]
+        'Калорий на день на данный момент, ккал', validators=[DataRequired()]
     )
     activity_level = SelectField(
         'Уровень повседневной активности',
@@ -67,21 +67,6 @@ class CreateSuggest(FlaskForm):
         choices=[],
         validators=[DataRequired()]
     )
-    # period = SelectField(
-    #     'Период',
-    #     choices=[],
-    #     validators=[DataRequired()]
-    # )
-
-    # body_type = SelectField(
-    #     'Тип телосложения',
-    #     choices=[
-    #         ('1', 'Крупное'),
-    #         ('2', 'Нормальное'),
-    #         ('3', 'Худощавое'),
-    #     ],
-    #     validators=[DataRequired()]
-    # )
 
     submit = SubmitField('Составить план')
 

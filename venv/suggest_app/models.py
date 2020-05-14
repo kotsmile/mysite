@@ -38,6 +38,11 @@ class Goal(db.Model):
     name = db.Column(db.String(64))
     percent = db.Column(db.Float)
 
+    protein_percent = db.Column(db.Float)
+    fat_percent = db.Column(db.Float)
+    carbohydrate_percent = db.Column(db.Float)
+
+
 
 class EqConf(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -103,6 +108,7 @@ class ItemGroup(db.Model):
 class MealType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
+    percent_of_CPFC_on_day = db.Column(db.Float)
     combo = db.relationship('Combination', backref='meal_type',
                                 lazy='dynamic')
 
